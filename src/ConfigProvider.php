@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -11,18 +11,16 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
-class ConfigProvider
-{
-    public const CONFIG_KEY                  = 'laminas-diactoros';
+class ConfigProvider {
+    public const CONFIG_KEY                  = 'rodas-diactoros';
     public const X_FORWARDED                 = 'x-forwarded-request-filter';
     public const X_FORWARDED_TRUSTED_PROXIES = 'trusted-proxies';
     public const X_FORWARDED_TRUSTED_HEADERS = 'trusted-headers';
 
     /**
-     * Retrieve configuration for laminas-diactoros.
+     * Retrieve configuration for rodas-diactoros.
      */
-    public function __invoke(): array
-    {
+    public function __invoke(): array {
         return [
             'dependencies'   => $this->getDependencies(),
             self::CONFIG_KEY => $this->getComponentConfig(),
@@ -33,8 +31,7 @@ class ConfigProvider
      * Returns the container dependencies.
      * Maps factory interfaces to factories.
      */
-    public function getDependencies(): array
-    {
+    public function getDependencies(): array {
         // @codingStandardsIgnoreStart
         return [
             'invokables' => [
@@ -49,8 +46,7 @@ class ConfigProvider
         // @codingStandardsIgnoreEnd
     }
 
-    public function getComponentConfig(): array
-    {
+    public function getComponentConfig(): array {
         return [
             self::X_FORWARDED => [
                 self::X_FORWARDED_TRUSTED_PROXIES => '',

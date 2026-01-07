@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
-use Laminas\Diactoros\ServerRequestFilter\FilterServerRequestInterface;
-use Laminas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
+use Rodas\Diactoros\ServerRequestFilter\FilterServerRequestInterface;
+use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
 use Override;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;

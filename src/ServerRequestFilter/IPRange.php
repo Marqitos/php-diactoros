@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\ServerRequestFilter;
+namespace Rodas\Diactoros\ServerRequestFilter;
 
 use function assert;
 use function count;
@@ -19,18 +19,14 @@ use function substr_compare;
 use function unpack;
 
 /** @internal */
-final class IPRange
-{
+final class IPRange {
     /**
      * Disable instantiation
      */
-    private function __construct()
-    {
-    }
+    private function __construct() { }
 
     /** @psalm-pure */
-    public static function matches(string $ip, string $cidr): bool
-    {
+    public static function matches(string $ip, string $cidr): bool {
         if (str_contains($ip, ':')) {
             return self::matchesIPv6($ip, $cidr);
         }
@@ -39,8 +35,7 @@ final class IPRange
     }
 
     /** @psalm-pure */
-    public static function matchesIPv4(string $ip, string $cidr): bool
-    {
+    public static function matchesIPv4(string $ip, string $cidr): bool {
         $mask   = 32;
         $subnet = $cidr;
 
@@ -71,8 +66,7 @@ final class IPRange
     }
 
     /** @psalm-pure */
-    public static function matchesIPv6(string $ip, string $cidr): bool
-    {
+    public static function matchesIPv6(string $ip, string $cidr): bool {
         $mask   = 128;
         $subnet = $cidr;
 

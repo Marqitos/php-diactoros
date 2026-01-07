@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -19,8 +19,7 @@ use function sprintf;
  * to an array, as well as the reverse operation of creating a Response instance
  * from an array representing a message.
  */
-final class ArraySerializer
-{
+final class ArraySerializer {
     /**
      * Serialize a response message to an array.
      *
@@ -32,8 +31,7 @@ final class ArraySerializer
      *     body: string
      * }
      */
-    public static function toArray(ResponseInterface $response): array
-    {
+    public static function toArray(ResponseInterface $response): array {
         return [
             'status_code'      => $response->getStatusCode(),
             'reason_phrase'    => $response->getReasonPhrase(),
@@ -48,8 +46,7 @@ final class ArraySerializer
      *
      * @throws Exception\DeserializationException When cannot deserialize response.
      */
-    public static function fromArray(array $serializedResponse): Response
-    {
+    public static function fromArray(array $serializedResponse): Response {
         try {
             $body = new Stream('php://memory', 'wb+');
             $body->write(self::getValueFromKey($serializedResponse, 'body'));
@@ -70,8 +67,7 @@ final class ArraySerializer
     /**
      * @throws Exception\DeserializationException
      */
-    private static function getValueFromKey(array $data, string $key, ?string $message = null): mixed
-    {
+    private static function getValueFromKey(array $data, string $key, ?string $message = null): mixed {
         if (isset($data[$key])) {
             return $data[$key];
         }

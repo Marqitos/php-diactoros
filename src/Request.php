@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Override;
 use Psr\Http\Message\RequestInterface;
@@ -18,8 +18,7 @@ use function strtolower;
  * implemented such that they retain the internal state of the current
  * message and return a new instance that contains the changed state.
  */
-class Request implements RequestInterface
-{
+class Request implements RequestInterface {
     use RequestTrait;
 
     /**
@@ -29,8 +28,7 @@ class Request implements RequestInterface
      * @param array<non-empty-string, string|string[]> $headers Headers for the message, if any.
      * @throws InvalidArgumentException For any invalid value.
      */
-    public function __construct($uri = null, ?string $method = null, $body = 'php://temp', array $headers = [])
-    {
+    public function __construct($uri = null, ?string $method = null, $body = 'php://temp', array $headers = []) {
         $this->initialize($uri, $method, $body, $headers);
     }
 
@@ -38,13 +36,10 @@ class Request implements RequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getHeaders(): array
-    {
+    public function getHeaders(): array {
         $headers = $this->headers;
-        if (
-            ! $this->hasHeader('host')
-            && $this->uri->getHost()
-        ) {
+        if (! $this->hasHeader('host') &&
+            $this->uri->getHost()) {
             $headers['Host'] = [$this->getHostFromUri()];
         }
 
@@ -55,13 +50,10 @@ class Request implements RequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getHeader(string $name): array
-    {
+    public function getHeader(string $name): array {
         if (empty($name) || ! $this->hasHeader($name)) {
-            if (
-                strtolower($name) === 'host'
-                && $this->uri->getHost()
-            ) {
+            if (strtolower($name) === 'host' &&
+                $this->uri->getHost()) {
                 return [$this->getHostFromUri()];
             }
 

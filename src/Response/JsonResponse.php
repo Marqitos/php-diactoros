@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
 use JsonException;
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
 
 use function is_object;
 use function is_resource;
@@ -28,8 +28,7 @@ use const JSON_UNESCAPED_SLASHES;
  * serializes the data to JSON, sets a status code of 200 and sets the
  * Content-Type header to application/json.
  */
-class JsonResponse extends Response
-{
+class JsonResponse extends Response {
     use InjectContentTypeTrait;
 
     /**
@@ -82,32 +81,27 @@ class JsonResponse extends Response
     /**
      * @return mixed
      */
-    public function getPayload()
-    {
+    public function getPayload() {
         return $this->payload;
     }
 
-    public function withPayload(mixed $data): JsonResponse
-    {
+    public function withPayload(mixed $data): JsonResponse {
         $new = clone $this;
         $new->setPayload($data);
         return $this->updateBodyFor($new);
     }
 
-    public function getEncodingOptions(): int
-    {
+    public function getEncodingOptions(): int {
         return $this->encodingOptions;
     }
 
-    public function withEncodingOptions(int $encodingOptions): JsonResponse
-    {
+    public function withEncodingOptions(int $encodingOptions): JsonResponse {
         $new                  = clone $this;
         $new->encodingOptions = $encodingOptions;
         return $this->updateBodyFor($new);
     }
 
-    private function createBodyFromJson(string $json): Stream
-    {
+    private function createBodyFromJson(string $json): Stream {
         $body = new Stream('php://temp', 'wb+');
         $body->write($json);
         $body->rewind();
@@ -120,8 +114,7 @@ class JsonResponse extends Response
      *
      * @throws InvalidArgumentException If unable to encode the $data to JSON.
      */
-    private function jsonEncode(mixed $data, int $encodingOptions): string
-    {
+    private function jsonEncode(mixed $data, int $encodingOptions): string {
         if (is_resource($data)) {
             throw new InvalidArgumentException('Cannot JSON encode resources');
         }
@@ -137,8 +130,7 @@ class JsonResponse extends Response
         }
     }
 
-    private function setPayload(mixed $data): void
-    {
+    private function setPayload(mixed $data): void {
         if (is_object($data)) {
             $data = clone $data;
         }
@@ -152,8 +144,7 @@ class JsonResponse extends Response
      * @param self $toUpdate Instance to update.
      * @return JsonResponse Returns a new instance with an updated body.
      */
-    private function updateBodyFor(JsonResponse $toUpdate): JsonResponse
-    {
+    private function updateBodyFor(JsonResponse $toUpdate): JsonResponse {
         $json = $this->jsonEncode($toUpdate->payload, $toUpdate->encodingOptions);
         $body = $this->createBodyFromJson($json);
         return $toUpdate->withBody($body);

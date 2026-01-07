@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
 use Psr\Http\Message\StreamInterface;
 
 use function get_debug_type;
@@ -20,8 +20,7 @@ use function sprintf;
  * by default, sets a status code of 200 and sets the Content-Type header to
  * text/html.
  */
-class HtmlResponse extends Response
-{
+class HtmlResponse extends Response {
     use InjectContentTypeTrait;
 
     /**
@@ -35,8 +34,7 @@ class HtmlResponse extends Response
      * @param array<non-empty-string, string|string[]> $headers Array of headers to use at initialization.
      * @throws InvalidArgumentException If $html is neither a string or stream.
      */
-    public function __construct($html, int $status = 200, array $headers = [])
-    {
+    public function __construct($html, int $status = 200, array $headers = []) {
         parent::__construct(
             $this->createBody($html),
             $status,

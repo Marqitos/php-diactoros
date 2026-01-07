@@ -2,18 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Exception;
+namespace Rodas\Diactoros\Exception;
 
-use Laminas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
+use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
 
 use function get_debug_type;
 use function is_string;
 use function sprintf;
 
-class InvalidForwardedHeaderNameException extends RuntimeException
-{
-    public static function forHeader(mixed $name): self
-    {
+class InvalidForwardedHeaderNameException extends RuntimeException {
+    public static function forHeader(mixed $name): self {
         if (! is_string($name)) {
             $name = sprintf('(value of type %s)', get_debug_type($name));
         }

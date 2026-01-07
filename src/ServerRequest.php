@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,8 +30,7 @@ use function sprintf;
  * implemented such that they retain the internal state of the current
  * message and return a new instance that contains the changed state.
  */
-class ServerRequest implements ServerRequestInterface
-{
+class ServerRequest implements ServerRequestInterface {
     use RequestTrait;
 
     private array $attributes = [];
@@ -78,8 +77,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getServerParams(): array
-    {
+    public function getServerParams(): array {
         return $this->serverParams;
     }
 
@@ -87,8 +85,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getUploadedFiles(): array
-    {
+    public function getUploadedFiles(): array {
         return $this->uploadedFiles;
     }
 
@@ -96,8 +93,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withUploadedFiles(array $uploadedFiles): ServerRequest
-    {
+    public function withUploadedFiles(array $uploadedFiles): ServerRequest {
         $this->validateUploadedFiles($uploadedFiles);
         $new                = clone $this;
         $new->uploadedFiles = $uploadedFiles;
@@ -108,8 +104,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getCookieParams(): array
-    {
+    public function getCookieParams(): array {
         return $this->cookieParams;
     }
 
@@ -117,8 +112,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withCookieParams(array $cookies): ServerRequest
-    {
+    public function withCookieParams(array $cookies): ServerRequest {
         $new               = clone $this;
         $new->cookieParams = $cookies;
         return $new;
@@ -128,8 +122,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getQueryParams(): array
-    {
+    public function getQueryParams(): array {
         return $this->queryParams;
     }
 
@@ -137,8 +130,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withQueryParams(array $query): ServerRequest
-    {
+    public function withQueryParams(array $query): ServerRequest {
         $new              = clone $this;
         $new->queryParams = $query;
         return $new;
@@ -148,8 +140,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getParsedBody()
-    {
+    public function getParsedBody() {
         return $this->parsedBody;
     }
 
@@ -157,8 +148,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withParsedBody($data): ServerRequest
-    {
+    public function withParsedBody($data): ServerRequest {
         /** @psalm-suppress DocblockTypeContradiction */
         if (! is_array($data) && ! is_object($data) && null !== $data) {
             throw new InvalidArgumentException(sprintf(
@@ -177,8 +167,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getAttributes(): array
-    {
+    public function getAttributes(): array {
         return $this->attributes;
     }
 
@@ -186,8 +175,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getAttribute(string $name, $default = null)
-    {
+    public function getAttribute(string $name, $default = null) {
         if (! array_key_exists($name, $this->attributes)) {
             return $default;
         }
@@ -199,8 +187,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withAttribute(string $name, $value): ServerRequest
-    {
+    public function withAttribute(string $name, $value): ServerRequest {
         $new                    = clone $this;
         $new->attributes[$name] = $value;
         return $new;
@@ -210,8 +197,7 @@ class ServerRequest implements ServerRequestInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withoutAttribute(string $name): ServerRequest
-    {
+    public function withoutAttribute(string $name): ServerRequest {
         $new = clone $this;
         unset($new->attributes[$name]);
         return $new;
@@ -222,8 +208,7 @@ class ServerRequest implements ServerRequestInterface
      *
      * @throws InvalidArgumentException If any leaf is not an UploadedFileInterface instance.
      */
-    private function validateUploadedFiles(array $uploadedFiles): void
-    {
+    private function validateUploadedFiles(array $uploadedFiles): void {
         foreach ($uploadedFiles as $file) {
             if (is_array($file)) {
                 $this->validateUploadedFiles($file);

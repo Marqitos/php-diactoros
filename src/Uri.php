@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Override;
 use Psr\Http\Message\UriInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Psr\Http\Message\StreamInterface;
 
@@ -21,8 +21,7 @@ use function ucwords;
  * strategies, including functionality for retrieving a line at a time from
  * the message, splitting headers from the body, and serializing headers.
  */
-abstract class AbstractSerializer
-{
+abstract class AbstractSerializer {
     public const CR  = "\r";
     public const EOL = "\r\n";
     public const LF  = "\n";
@@ -36,8 +35,7 @@ abstract class AbstractSerializer
      * @throws Exception\DeserializationException If the sequence contains a CR
      *     or LF in isolation, or ends in a CR.
      */
-    protected static function getLine(StreamInterface $stream): string
-    {
+    protected static function getLine(StreamInterface $stream): string {
         $line    = '';
         $crFound = false;
         while (! $stream->eof()) {
@@ -86,8 +84,7 @@ abstract class AbstractSerializer
      *
      * @throws Exception\DeserializationException For invalid headers.
      */
-    protected static function splitStream(StreamInterface $stream): array
-    {
+    protected static function splitStream(StreamInterface $stream): array {
         $headers       = [];
         $currentHeader = false;
 
@@ -124,8 +121,7 @@ abstract class AbstractSerializer
      *
      * @psalm-param array<non-empty-string, string[]> $headers
      */
-    protected static function serializeHeaders(array $headers): string
-    {
+    protected static function serializeHeaders(array $headers): string {
         $lines = [];
         foreach ($headers as $header => $values) {
             $normalized = self::filterHeader($header);
@@ -142,8 +138,7 @@ abstract class AbstractSerializer
      *
      * @param string $header
      */
-    protected static function filterHeader($header): string
-    {
+    protected static function filterHeader($header): string {
         $filtered = str_replace('-', ' ', $header);
         $filtered = ucwords($filtered);
         return str_replace(' ', '-', $filtered);

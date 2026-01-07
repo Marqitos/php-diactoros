@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use function get_debug_type;
 use function in_array;
@@ -16,16 +16,13 @@ use function strlen;
 /**
  * Provide security tools around HTTP headers to prevent common injection vectors.
  */
-final class HeaderSecurity
-{
+final class HeaderSecurity {
     /**
      * Private constructor; non-instantiable.
      *
      * @codeCoverageIgnore
      */
-    private function __construct()
-    {
-    }
+    private function __construct() { }
 
     /**
      * Filter a header value
@@ -41,8 +38,7 @@ final class HeaderSecurity
      *
      * @see http://en.wikipedia.org/wiki/HTTP_response_splitting
      */
-    public static function filter(string $value): string
-    {
+    public static function filter(string $value): string {
         $length = strlen($value);
         $string = '';
         for ($i = 0; $i < $length; $i += 1) {
@@ -65,11 +61,10 @@ final class HeaderSecurity
             // 32-126, 128-254 === visible
             // 127 === DEL
             // 255 === null byte
-            if (
-                ($ascii < 32 && $ascii !== 9)
-                || $ascii === 127
-                || $ascii > 254
-            ) {
+            if (($ascii < 32 &&
+                 $ascii !== 9) ||
+                $ascii === 127 ||
+                $ascii > 254) {
                 continue;
             }
 
@@ -90,8 +85,7 @@ final class HeaderSecurity
      *
      * @param string|int|float $value
      */
-    public static function isValid($value): bool
-    {
+    public static function isValid($value): bool {
         $value = (string) $value;
 
         // Look for:
@@ -122,8 +116,7 @@ final class HeaderSecurity
      * @param mixed $value Value to be tested. This method asserts it is a string or number.
      * @throws InvalidArgumentException For invalid values.
      */
-    public static function assertValid(mixed $value): void
-    {
+    public static function assertValid(mixed $value): void {
         if (! is_string($value) && ! is_numeric($value)) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid header value type; must be a string or numeric; received %s',
@@ -145,8 +138,7 @@ final class HeaderSecurity
      *
      * @throws InvalidArgumentException
      */
-    public static function assertValidName(mixed $name): void
-    {
+    public static function assertValidName(mixed $name): void {
         if (! is_string($name)) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid header name type; expected string; received %s',

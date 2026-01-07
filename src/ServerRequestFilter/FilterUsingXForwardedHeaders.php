@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\ServerRequestFilter;
+namespace Rodas\Diactoros\ServerRequestFilter;
 
-use Laminas\Diactoros\Exception\InvalidForwardedHeaderNameException;
-use Laminas\Diactoros\Exception\InvalidProxyAddressException;
-use Laminas\Diactoros\UriFactory;
+use Rodas\Diactoros\Exception\InvalidForwardedHeaderNameException;
+use Rodas\Diactoros\Exception\InvalidProxyAddressException;
+use Rodas\Diactoros\UriFactory;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -243,24 +243,16 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
 
         if (str_contains($address, ':')) {
             // is IPV6
-            return filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)
-                && (
-                    $mask === null
-                    || (
-                        $mask <= 128
-                        && $mask >= 0
-                    )
-                );
+            return filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) &&
+                   ($mask === null ||
+                    ($mask <= 128 &&
+                     $mask >= 0));
         }
 
         // is IPV4
-        return filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
-            && (
-                $mask === null
-                || (
-                    $mask <= 32
-                    && $mask >= 0
-                )
-            );
+        return filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) &&
+               ($mask === null ||
+                ($mask <= 32 &&
+                 $mask >= 0));
     }
 }

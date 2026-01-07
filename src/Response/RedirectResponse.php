@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
 use Psr\Http\Message\UriInterface;
 
 use function get_debug_type;
@@ -15,8 +15,7 @@ use function sprintf;
 /**
  * Produce a redirect response.
  */
-class RedirectResponse extends Response
-{
+class RedirectResponse extends Response {
     /**
      * Create a redirect response.
      *
@@ -29,8 +28,7 @@ class RedirectResponse extends Response
      * @param int $status Integer status code for the redirect; 302 by default.
      * @param array<non-empty-string, string|string[]> $headers Array of headers to use at initialization.
      */
-    public function __construct($uri, int $status = 302, array $headers = [])
-    {
+    public function __construct($uri, int $status = 302, array $headers = []) {
         if (! is_string($uri) && ! $uri instanceof UriInterface) {
             throw new InvalidArgumentException(sprintf(
                 'Uri provided to %s MUST be a string or Psr\Http\Message\UriInterface instance; received "%s"',

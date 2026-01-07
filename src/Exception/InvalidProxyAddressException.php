@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Exception;
+namespace Rodas\Diactoros\Exception;
 
 use function get_debug_type;
 use function sprintf;
 
-class InvalidProxyAddressException extends RuntimeException
-{
-    public static function forInvalidProxyArgument(mixed $proxy): self
-    {
+class InvalidProxyAddressException extends RuntimeException {
+    public static function forInvalidProxyArgument(mixed $proxy): self {
         $type = get_debug_type($proxy);
         return new self(sprintf(
             'Invalid proxy of type "%s" provided;'
@@ -20,8 +18,7 @@ class InvalidProxyAddressException extends RuntimeException
         ));
     }
 
-    public static function forAddress(string $address): self
-    {
+    public static function forAddress(string $address): self {
         return new self(sprintf(
             'Invalid proxy address "%s" provided;'
             . ' must be a valid IPv4 or IPv6 address, optionally with a subnet mask provided',

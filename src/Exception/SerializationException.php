@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Exception;
+namespace Rodas\Diactoros\Exception;
 
 use UnexpectedValueException;
 
-class SerializationException extends UnexpectedValueException
-{
+class SerializationException extends UnexpectedValueException {
     public static function forInvalidRequestLine(): self
     {
         return new self('Invalid request line detected');

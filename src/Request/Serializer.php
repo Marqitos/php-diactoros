@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Request;
+namespace Rodas\Diactoros\Request;
 
-use Laminas\Diactoros\AbstractSerializer;
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Request;
-use Laminas\Diactoros\Stream;
-use Laminas\Diactoros\Uri;
+use Rodas\Diactoros\AbstractSerializer;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Request;
+use Rodas\Diactoros\Stream;
+use Rodas\Diactoros\Uri;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -22,8 +22,7 @@ use function sprintf;
  * to a string, as well as the reverse operation of creating a Request instance
  * from a string/stream representing a message.
  */
-final class Serializer extends AbstractSerializer
-{
+final class Serializer extends AbstractSerializer {
     /**
      * Deserialize a request string to a request instance.
      *
@@ -31,8 +30,7 @@ final class Serializer extends AbstractSerializer
      *
      * @throws Exception\SerializationException When errors occur parsing the message.
      */
-    public static function fromString(string $message): Request
-    {
+    public static function fromString(string $message): Request {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write($message);
         return self::fromStream($stream);
@@ -44,8 +42,7 @@ final class Serializer extends AbstractSerializer
      * @throws InvalidArgumentException If the message stream is not readable or seekable.
      * @throws Exception\SerializationException If an invalid request line is detected.
      */
-    public static function fromStream(StreamInterface $stream): Request
-    {
+    public static function fromStream(StreamInterface $stream): Request {
         if (! $stream->isReadable() || ! $stream->isSeekable()) {
             throw new InvalidArgumentException('Message stream must be both readable and seekable');
         }
@@ -65,8 +62,7 @@ final class Serializer extends AbstractSerializer
     /**
      * Serialize a request message to a string.
      */
-    public static function toString(RequestInterface $request): string
-    {
+    public static function toString(RequestInterface $request): string {
         $httpMethod = $request->getMethod();
         $headers    = self::serializeHeaders($request->getHeaders());
         $body       = (string) $request->getBody();
@@ -98,17 +94,13 @@ final class Serializer extends AbstractSerializer
      *
      * @throws Exception\SerializationException
      */
-    private static function getRequestLine(StreamInterface $stream): array
-    {
+    private static function getRequestLine(StreamInterface $stream): array {
         $requestLine = self::getLine($stream);
 
-        if (
-            ! preg_match(
+        if (! preg_match(
                 '#^(?P<method>[!\#$%&\'*+.^_`|~a-zA-Z0-9-]+) (?P<target>[^\s]+) HTTP/(?P<version>[1-9]\d*\.\d+)$#',
                 $requestLine,
-                $matches
-            )
-        ) {
+                $matches)) {
             throw Exception\SerializationException::forInvalidRequestLine();
         }
 
@@ -122,8 +114,7 @@ final class Serializer extends AbstractSerializer
      * instance is returned; otherwise, the value is used to create and return
      * a new Uri instance.
      */
-    private static function createUriFromRequestTarget(string $requestTarget): Uri
-    {
+    private static function createUriFromRequestTarget(string $requestTarget): Uri {
         if (preg_match('#^https?://#', $requestTarget)) {
             return new Uri($requestTarget);
         }

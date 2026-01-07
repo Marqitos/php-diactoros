@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Exception;
+namespace Rodas\Diactoros\Exception;
 
 use RuntimeException;
 use Throwable;
 
-class InvalidStreamPointerPositionException extends RuntimeException
-{
+class InvalidStreamPointerPositionException extends RuntimeException {
     /** {@inheritDoc} */
     public function __construct(
         string $message = 'Invalid pointer position',

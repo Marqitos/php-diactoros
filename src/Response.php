@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -17,8 +17,7 @@ use function sprintf;
  * implemented such that they retain the internal state of the current
  * message and return a new instance that contains the changed state.
  */
-class Response implements ResponseInterface
-{
+class Response implements ResponseInterface {
     use MessageTrait;
 
     public const MIN_STATUS_CODE_VALUE = 100;
@@ -115,8 +114,7 @@ class Response implements ResponseInterface
      * @param array<non-empty-string, string|string[]> $headers Headers for the response, if any.
      * @throws InvalidArgumentException On any invalid element.
      */
-    public function __construct($body = 'php://memory', int $status = 200, array $headers = [])
-    {
+    public function __construct($body = 'php://memory', int $status = 200, array $headers = []) {
         $this->setStatusCode($status);
         $this->stream = $this->getStream($body, 'wb+');
         $this->setHeaders($headers);
@@ -126,8 +124,7 @@ class Response implements ResponseInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getStatusCode(): int
-    {
+    public function getStatusCode(): int {
         return $this->statusCode;
     }
 
@@ -135,8 +132,7 @@ class Response implements ResponseInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getReasonPhrase(): string
-    {
+    public function getReasonPhrase(): string {
         return $this->reasonPhrase;
     }
 
@@ -144,8 +140,7 @@ class Response implements ResponseInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function withStatus(int $code, string $reasonPhrase = ''): Response
-    {
+    public function withStatus(int $code, string $reasonPhrase = ''): Response {
         $new = clone $this;
         $new->setStatusCode($code, $reasonPhrase);
         return $new;
@@ -156,12 +151,9 @@ class Response implements ResponseInterface
      *
      * @throws InvalidArgumentException On an invalid status code.
      */
-    private function setStatusCode(int $code, string $reasonPhrase = ''): void
-    {
-        if (
-            $code < static::MIN_STATUS_CODE_VALUE
-            || $code > static::MAX_STATUS_CODE_VALUE
-        ) {
+    private function setStatusCode(int $code, string $reasonPhrase = ''): void {
+        if ($code < static::MIN_STATUS_CODE_VALUE ||
+            $code > static::MAX_STATUS_CODE_VALUE) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid status code "%s"; must be an integer between %d and %d, inclusive',
                 $code,
@@ -170,7 +162,9 @@ class Response implements ResponseInterface
             ));
         }
 
-        if ($reasonPhrase === '' && isset($this->phrases[$code])) {
+        if ($reasonPhrase === '' &&
+            isset($this->phrases[$code])) {
+                
             $reasonPhrase = $this->phrases[$code];
         }
 

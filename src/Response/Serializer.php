@@ -2,27 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
-use Laminas\Diactoros\AbstractSerializer;
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
+use Rodas\Diactoros\AbstractSerializer;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 use function preg_match;
 use function sprintf;
 
-final class Serializer extends AbstractSerializer
-{
+final class Serializer extends AbstractSerializer {
     /**
      * Deserialize a response string to a response instance.
      *
      * @throws Exception\SerializationException When errors occur parsing the message.
      */
-    public static function fromString(string $message): Response
-    {
+    public static function fromString(string $message): Response {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write($message);
         return static::fromStream($stream);
@@ -34,8 +32,7 @@ final class Serializer extends AbstractSerializer
      * @throws InvalidArgumentException When the stream is not readable.
      * @throws Exception\SerializationException When errors occur parsing the message.
      */
-    public static function fromStream(StreamInterface $stream): Response
-    {
+    public static function fromStream(StreamInterface $stream): Response {
         if (! $stream->isReadable() || ! $stream->isSeekable()) {
             throw new InvalidArgumentException('Message stream must be both readable and seekable');
         }
@@ -53,8 +50,7 @@ final class Serializer extends AbstractSerializer
     /**
      * Create a string representation of a response.
      */
-    public static function toString(ResponseInterface $response): string
-    {
+    public static function toString(ResponseInterface $response): string {
         $reasonPhrase = $response->getReasonPhrase();
         $headers      = self::serializeHeaders($response->getHeaders());
         $body         = (string) $response->getBody();
@@ -82,17 +78,13 @@ final class Serializer extends AbstractSerializer
      * @return array Array with three elements: 0 => version, 1 => status, 2 => reason
      * @throws Exception\SerializationException If line is malformed.
      */
-    private static function getStatusLine(StreamInterface $stream): array
-    {
+    private static function getStatusLine(StreamInterface $stream): array {
         $line = self::getLine($stream);
 
-        if (
-            ! preg_match(
+        if (! preg_match(
                 '#^HTTP/(?P<version>[1-9]\d*\.\d) (?P<status>[1-5]\d{2})(\s+(?P<reason>.+))?$#',
                 $line,
-                $matches
-            )
-        ) {
+                $matches)) {
             throw Exception\SerializationException::forInvalidStatusLine();
         }
 

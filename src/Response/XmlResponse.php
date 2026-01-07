@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Response;
+namespace Rodas\Diactoros\Response;
 
-use Laminas\Diactoros\Exception;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
 use Psr\Http\Message\StreamInterface;
 
 use function get_debug_type;
@@ -19,8 +19,7 @@ use function sprintf;
  * Allows creating a response by passing an XML string to the constructor; by default,
  * sets a status code of 200 and sets the Content-Type header to application/xml.
  */
-class XmlResponse extends Response
-{
+class XmlResponse extends Response {
     use InjectContentTypeTrait;
 
     /**
@@ -52,8 +51,7 @@ class XmlResponse extends Response
      * @param string|StreamInterface $xml
      * @throws InvalidArgumentException If $xml is neither a string or stream.
      */
-    private function createBody($xml): StreamInterface
-    {
+    private function createBody($xml): StreamInterface {
         if ($xml instanceof StreamInterface) {
             return $xml;
         }

@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros;
+namespace Rodas\Diactoros;
 
-class Module
-{
-    public function getConfig(): array
-    {
+class Module {
+    public function getConfig(): array {
         return [
             'service_manager' => (new ConfigProvider())->getDependencies(),
         ];

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\ServerRequestFilter;
+namespace Rodas\Diactoros\ServerRequestFilter;
 
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -19,8 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * This functionality is consumed by the ServerRequestFactory using the request
  * instance it generates, just prior to returning a request.
  */
-interface FilterServerRequestInterface
-{
+interface FilterServerRequestInterface {
     /**
      * Determine if a request needs further modification, and if so, return a
      * new instance reflecting those modifications.

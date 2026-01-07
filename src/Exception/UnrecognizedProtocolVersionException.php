@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Laminas\Diactoros\Exception;
+namespace Rodas\Diactoros\Exception;
 
 use UnexpectedValueException;
 
 use function sprintf;
 
-class UnrecognizedProtocolVersionException extends UnexpectedValueException
-{
-    public static function forVersion(string $version): self
-    {
+class UnrecognizedProtocolVersionException extends UnexpectedValueException {
+    public static function forVersion(string $version): self {
         return new self(sprintf('Unrecognized protocol version (%s)', $version));
     }
 }
