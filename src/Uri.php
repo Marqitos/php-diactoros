@@ -1,4 +1,19 @@
 <?php
+/**
+ * This file is part of the Rodas\Psr\Http\Message library
+ *
+ * Based on Http\Message\Uri.php
+ * fig/http-message-util (Psr\Http\Message) from PHP Framework Interoperability Group
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Psr
+ * @subpackage psr-http-message
+ * @copyright 2025 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/psr
+ */
 
 declare(strict_types=1);
 
@@ -6,7 +21,7 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Message\UriInterface;
+use Rodas\Psr\Http\Message\UriInterface;
 use SensitiveParameter;
 use Stringable;
 
@@ -40,8 +55,7 @@ use function substr;
  *
  * @psalm-immutable
  */
-class Uri implements UriInterface, Stringable
-{
+class Uri implements UriInterface, Stringable {
     /**
      * Sub-delimiters used in user info, query strings and fragments.
      *
@@ -66,19 +80,83 @@ class Uri implements UriInterface, Stringable
         'https' => 443,
     ];
 
-    private string $scheme = '';
+    public private(set) string $scheme = '' {
+        get => $this->scheme;
+        set => $this->scheme = $value;
+    }
 
-    private string $userInfo = '';
+    /**
+     * Get the user-info part of the URI.
+     *
+     * This value is percent-encoded, per RFC 3986 Section 3.2.1.
+     *
+     * {@inheritdoc}
+     */
+    public private(set) string $userInfo = '' {
+        get => $this->userInfo;
+        set => $this->userInfo = $value;
+    }
 
-    private string $host = '';
+    public private(set) string $host = '' {
+        get => $this->host;
+        set => $this->host = strtolower($value);
+    }
 
-    private ?int $port = null;
+    public private(set) ?int $port = null {
+        get {
+            return $this->isNonStandardPort($this->scheme, $this->host, $this->port)
+                ? $this->port
+                : null;
+        }
+        set => $this->port = $value;
+    }
 
-    private string $path = '';
+    public private(set) string $path = '' {
+        get {
+            if ('' === $this->path) {
+                // No path
+                return $this->path;
+            }
 
-    private string $query = '';
+            if ($this->path[0] !== '/') {
+                // Relative path
+                return $this->path;
+            }
 
-    private string $fragment = '';
+            // Ensure only one leading slash, to prevent XSS attempts.
+            return '/' . ltrim($this->path, '/');
+        }
+        set => $this->path = $value;
+    }
+
+    public private(set) string $query = '' {
+        get => $this->query;
+        set => $this->query = $value;
+    }
+
+    public private(set) string $fragment = '' {
+        get => $this->fragment;
+        set => $this->fragment = $value;
+    }
+
+    public string $authority {
+        get {
+            if ('' === $this->host) {
+                return '';
+            }
+
+            $authority = $this->host;
+            if ('' !== $this->userInfo) {
+                $authority = $this->userInfo . '@' . $authority;
+            }
+
+            if ($this->isNonStandardPort($this->scheme, $this->host, $this->port)) {
+                $authority .= ':' . $this->port;
+            }
+
+            return $authority;
+        }
+    }
 
     /**
      * generated uri string cache
@@ -126,108 +204,6 @@ class Uri implements UriInterface, Stringable
         );
 
         return $this->uriString;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getScheme(): string
-    {
-        return $this->scheme;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getAuthority(): string
-    {
-        if ('' === $this->host) {
-            return '';
-        }
-
-        $authority = $this->host;
-        if ('' !== $this->userInfo) {
-            $authority = $this->userInfo . '@' . $authority;
-        }
-
-        if ($this->isNonStandardPort($this->scheme, $this->host, $this->port)) {
-            $authority .= ':' . $this->port;
-        }
-
-        return $authority;
-    }
-
-    /**
-     * Retrieve the user-info part of the URI.
-     *
-     * This value is percent-encoded, per RFC 3986 Section 3.2.1.
-     *
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getUserInfo(): string
-    {
-        return $this->userInfo;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getHost(): string
-    {
-        return $this->host;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getPort(): ?int
-    {
-        return $this->isNonStandardPort($this->scheme, $this->host, $this->port)
-            ? $this->port
-            : null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getPath(): string
-    {
-        if ('' === $this->path) {
-            // No path
-            return $this->path;
-        }
-
-        if ($this->path[0] !== '/') {
-            // Relative path
-            return $this->path;
-        }
-
-        // Ensure only one leading slash, to prevent XSS attempts.
-        return '/' . ltrim($this->path, '/');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getQuery(): string
-    {
-        return $this->query;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getFragment(): string
-    {
-        return $this->fragment;
     }
 
     /**
@@ -290,13 +266,13 @@ class Uri implements UriInterface, Stringable
     #[Override]
     public function withHost(string $host): UriInterface
     {
-        if ($host === $this->host) {
+        if (strtolower($host) === $this->host) {
             // Do nothing if no change was made.
             return $this;
         }
 
         $new       = clone $this;
-        $new->host = strtolower($host);
+        $new->host = $host;
 
         return $new;
     }
@@ -329,8 +305,7 @@ class Uri implements UriInterface, Stringable
      * {@inheritdoc}
      */
     #[Override]
-    public function withPath(string $path): UriInterface
-    {
+    public function withPath(string $path): UriInterface {
         if (str_contains($path, '?')) {
             throw new InvalidArgumentException(
                 'Invalid path provided; must not contain a query string'
@@ -418,7 +393,7 @@ class Uri implements UriInterface, Stringable
 
         $this->scheme   = isset($parts['scheme']) ? $this->filterScheme($parts['scheme']) : '';
         $this->userInfo = isset($parts['user']) ? $this->filterUserInfoPart($parts['user']) : '';
-        $this->host     = isset($parts['host']) ? strtolower($parts['host']) : '';
+        $this->host     = isset($parts['host']) ? $parts['host'] : '';
         $this->port     = $parts['port'] ?? null;
         $this->path     = isset($parts['path']) ? $this->filterPath($parts['path']) : '';
         $this->query    = isset($parts['query']) ? $this->filterQuery($parts['query']) : '';
@@ -471,17 +446,20 @@ class Uri implements UriInterface, Stringable
      *
      * @psalm-assert-if-true int $port
      */
-    private function isNonStandardPort(string $scheme, string $host, ?int $port): bool
-    {
+    private function isNonStandardPort(string $scheme, string $host, ?int $port): bool {
         if ('' === $scheme) {
-            return '' === $host || null !== $port;
+            return '' === $host ||
+                   null !== $port;
         }
 
-        if ('' === $host || null === $port) {
+        if ('' === $host ||
+            null === $port) {
+
             return false;
         }
 
-        return ! isset($this->allowedSchemes[$scheme]) || $port !== $this->allowedSchemes[$scheme];
+        return ! isset($this->allowedSchemes[$scheme]) ||
+               $port !== $this->allowedSchemes[$scheme];
     }
 
     /**
@@ -490,8 +468,7 @@ class Uri implements UriInterface, Stringable
      * @param string $scheme Scheme name.
      * @return string Filtered scheme.
      */
-    private function filterScheme(string $scheme): string
-    {
+    private function filterScheme(string $scheme): string {
         $scheme = strtolower($scheme);
         $scheme = preg_replace('#:(//)?$#', '', $scheme);
         assert(is_string($scheme));
