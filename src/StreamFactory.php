@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Rodas\Diactoros;
 
 use Override;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StreamFactoryInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 use function assert;
 use function fopen;
