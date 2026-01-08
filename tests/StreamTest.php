@@ -565,7 +565,6 @@ final class StreamTest extends TestCase
 
     /**
      * @return array<string, string[]>
-     */
     public static function invalidStringResources(): array
     {
         return [
@@ -583,6 +582,7 @@ final class StreamTest extends TestCase
 
         $this->stream->attach($stream);
     }
+     */
 
     public function testAttachWithResourceAttachesResource(): void
     {

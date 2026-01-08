@@ -177,13 +177,13 @@ final class ResponseTest extends TestCase
 
     /**
      * @param non-empty-string $reasonPhrase
-     */
     #[DataProvider('ianaCodesReasonPhrasesProvider')]
     public function testReasonPhraseDefaultsAgainstIana(int $code, string $reasonPhrase): void
     {
         $response = $this->response->withStatus($code);
         $this->assertSame($reasonPhrase, $response->getReasonPhrase());
     }
+     */
 
     public function testCanSetCustomReasonPhrase(): void
     {

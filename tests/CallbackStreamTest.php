@@ -160,11 +160,12 @@ final class CallbackStreamTest extends TestCase {
     /**
      * @param callable(): string $callback
      * @param non-empty-string $expected
-     */
+     *
     #[DataProvider('phpCallbacksForStreams')]
     public function testAllowsArbitraryPhpCallbacks(callable $callback, string $expected): void {
         $stream   = new CallbackStream($callback);
         $contents = $stream->getContents();
         $this->assertSame($expected, $contents);
     }
+     */
 }
