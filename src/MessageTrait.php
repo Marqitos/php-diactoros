@@ -94,33 +94,6 @@ trait MessageTrait {
     }
 
     /**
-     * Retrieves all message headers.
-     *
-     * The keys represent the header name as it will be sent over the wire, and
-     * each value is an array of strings associated with the header.
-     *
-     *     // Represent the headers as a string
-     *     foreach ($message->getHeaders() as $name => $values) {
-     *         echo $name . ": " . implode(", ", $values);
-     *     }
-     *
-     *     // Emit headers iteratively:
-     *     foreach ($message->getHeaders() as $name => $values) {
-     *         foreach ($values as $value) {
-     *             header(sprintf('%s: %s', $name, $value), false);
-     *         }
-     *     }
-     *
-     * @return array Returns an associative array of the message's headers. Each
-     *     key MUST be a header name, and each value MUST be an array of strings.
-     * @psalm-return array<non-empty-string, list<string>>
-     */
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
-    /**
      * Checks if a header exists by the given case-insensitive name.
      *
      * @param string $name Case-insensitive header name.
@@ -128,8 +101,7 @@ trait MessageTrait {
      *     name using a case-insensitive string comparison. Returns false if
      *     no matching header name is found in the message.
      */
-    public function hasHeader(string $name): bool
-    {
+    public function hasHeader(string $name): bool {
         return isset($this->headerNames[strtolower($name)]);
     }
 
@@ -152,8 +124,7 @@ trait MessageTrait {
      *    concatenated together using a comma. If the header does not appear in
      *    the message, this method MUST return an empty string.
      */
-    public function getHeaderLine(string $name): string
-    {
+    public function getHeaderLine(string $name): string {
         $value = $this->getHeader($name);
         if (empty($value)) {
             return '';
@@ -167,7 +138,7 @@ trait MessageTrait {
      * values of any headers with the same case-insensitive name.
      *
      * While header names are case-insensitive, the casing of the header will
-     * be preserved by this function, and returned from getHeaders().
+     * be preserved by this function, and returned from $headers.
      *
      * This method MUST be implemented in such a way as to retain the
      * immutability of the message, and MUST return an instance that has the
@@ -369,5 +340,26 @@ trait MessageTrait {
      */
     private function assertHeader(mixed $name): void {
         HeaderSecurity::assertValidName($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getHeader(string $name): array {
+        if (empty($name) ||
+           ! $this->hasHeader($name)) {
+
+            if (strtolower($name) === 'host' &&
+                $this->uri->getHost()) {
+                return [$this->getHostFromUri()];
+            }
+
+            return [];
+        }
+
+        $header = $this->headerNames[strtolower($name)];
+
+        return $this->headers[$header];
     }
 }

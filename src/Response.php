@@ -1,4 +1,18 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\Response.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
@@ -6,8 +20,9 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\ResponseInterface;
+use Rodas\Psr\Http\Message\StatusCode;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 use function sprintf;
 
@@ -24,6 +39,7 @@ class Response implements ResponseInterface {
     public const MIN_STATUS_CODE_VALUE = 100;
     public const MAX_STATUS_CODE_VALUE = 599;
 
+    // TODO: Use Enum from Rodas/Psr
     /**
      * Map of standard HTTP status code/reason phrases
      *
@@ -105,9 +121,78 @@ class Response implements ResponseInterface {
         599 => 'Network Connect Timeout Error',
     ];
 
-    private string $reasonPhrase;
+    /**
+     * Retrieves all message headers.
+     *
+     * The keys represent the header name as it will be sent over the wire, and
+     * each value is an array of strings associated with the header.
+     *
+     *     // Represent the headers as a string
+     *     foreach ($message->headers as $name => $values) {
+     *         echo $name . ": " . implode(", ", $values);
+     *     }
+     *
+     *     // Emit headers iteratively:
+     *     foreach ($message->headers as $name => $values) {
+     *         foreach ($values as $value) {
+     *             header(sprintf('%s: %s', $name, $value), false);
+     *         }
+     *     }
+     *
+     * @return array Returns an associative array of the message's headers. Each
+     *     key MUST be a header name, and each value MUST be an array of strings.
+     * @psalm-return array<non-empty-string, list<string>>
+     */
+    public array $headers {
+        get => $this->headers;
+        set => $this->headers = $value;
+    }
 
-    private int $statusCode;
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) string $reasonPhrase {
+        get => $this->reasonPhrase;
+        set => $this->reasonPhrase = $value;
+    }
+
+    public private(set) int $status {
+        get => $this->status;
+        set(int $value) {
+            if ($value < static::MIN_STATUS_CODE_VALUE ||
+                $value > static::MAX_STATUS_CODE_VALUE) {
+                throw new InvalidArgumentException(sprintf(
+                    'Invalid status code "%s"; must be an integer between %d and %d, inclusive',
+                    $value,
+                    self::MIN_STATUS_CODE_VALUE,
+                    self::MAX_STATUS_CODE_VALUE
+                ));
+            } else {
+                $statusCode = StatusCode::tryFrom($value);
+                if ($this->statusCode !== $statusCode) {
+                    $this->statusCode = $statusCode;
+                }
+            }
+            $this->status = $value;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) ?StatusCode $statusCode {
+        get => $this->statusCode;
+        set(?StatusCode $value)  {
+            if ($value === null) {
+                throw new InvalidArgumentException('Status code cannot be null');
+            }
+            $this->statusCode = $value;
+            $code       = $statusCode->value;
+            if ($this->status !== $code) {
+                $this->status = $code;
+            }
+        }
+    }
 
     /**
      * @param string|resource|StreamInterface $body Stream identifier and/or actual stream resource
@@ -121,27 +206,13 @@ class Response implements ResponseInterface {
         $this->setHeaders($headers);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getStatusCode(): int {
-        return $this->statusCode;
-    }
+
 
     /**
      * {@inheritdoc}
      */
     #[Override]
-    public function getReasonPhrase(): string {
-        return $this->reasonPhrase;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function withStatus(int $code, string $reasonPhrase = ''): Response {
+    public function withStatus(StatusCode|int $code, string $reasonPhrase = ''): Response {
         $new = clone $this;
         $new->setStatusCode($code, $reasonPhrase);
         return $new;
@@ -152,15 +223,11 @@ class Response implements ResponseInterface {
      *
      * @throws InvalidArgumentException On an invalid status code.
      */
-    private function setStatusCode(int $code, string $reasonPhrase = ''): void {
-        if ($code < static::MIN_STATUS_CODE_VALUE ||
-            $code > static::MAX_STATUS_CODE_VALUE) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid status code "%s"; must be an integer between %d and %d, inclusive',
-                $code,
-                self::MIN_STATUS_CODE_VALUE,
-                self::MAX_STATUS_CODE_VALUE
-            ));
+    private function setStatusCode(StatusCode|int $code, string $reasonPhrase = ''): void {
+        if (is_int($code)) {
+            $this->status = $code;
+        } else {
+            $this->statusCode = $code;
         }
 
         if ($reasonPhrase === '' &&
@@ -170,6 +237,5 @@ class Response implements ResponseInterface {
         }
 
         $this->reasonPhrase = $reasonPhrase;
-        $this->statusCode   = $code;
     }
 }
