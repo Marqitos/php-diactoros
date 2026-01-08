@@ -1,12 +1,26 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\MessageTrait.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\MessageInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 use function array_map;
 use function array_merge;
@@ -26,14 +40,7 @@ use function trim;
  *
  * @see https://github.com/php-fig/http-message/tree/master/src/MessageInterface.php
  */
-trait MessageTrait
-{
-    /**
-     * List of all registered headers, as key => array of values.
-     *
-     * @var array<non-empty-string, list<string>>
-     */
-    protected $headers = [];
+trait MessageTrait {
 
     /**
      * Map of normalized header name to original name used to register header.
@@ -42,23 +49,28 @@ trait MessageTrait
      */
     protected $headerNames = [];
 
-    /** @var string */
-    private $protocol = '1.1';
-
-    /** @var StreamInterface */
-    private $stream;
-
     /**
-     * Retrieves the HTTP protocol version as a string.
+     * Gets the HTTP protocol version as a string.
      *
      * The string MUST contain only the HTTP version number (e.g., "1.1", "1.0").
      *
-     * @return string HTTP protocol version.
+     * @var string HTTP protocol version.
      */
-    public function getProtocolVersion(): string
-    {
-        return $this->protocol;
+    public private(set) string $protocolVersion = '1.1' {
+        get => $this->protocolVersion;
+        set => $this->protocolVersion = $value;
+     }
+
+    /**
+     * Gets the body of the message.
+     *
+     * @var StreamInterface
+     */
+    public private(set) StreamInterface $body {
+        get => $this->body;
+        set => $this->body = $value;
     }
+
 
     /**
      * Return an instance with the specified HTTP protocol version.
@@ -122,32 +134,6 @@ trait MessageTrait
     }
 
     /**
-     * Retrieves a message header value by the given case-insensitive name.
-     *
-     * This method returns an array of all the header values of the given
-     * case-insensitive header name.
-     *
-     * If the header does not appear in the message, this method MUST return an
-     * empty array.
-     *
-     * @param string $name Case-insensitive header field name.
-     * @return string[] An array of string values as provided for the given
-     *    header. If the header does not appear in the message, this method MUST
-     *    return an empty array.
-     */
-    public function getHeader(string $name): array
-    {
-        if (! $this->hasHeader($name)) {
-            return [];
-        }
-
-        /** @psalm-suppress PossiblyInvalidArrayOffset */
-        $name = $this->headerNames[strtolower($name)];
-
-        return $this->headers[$name];
-    }
-
-    /**
      * Retrieves a comma-separated string of the values for a single header.
      *
      * This method returns all of the header values of the given
@@ -192,8 +178,7 @@ trait MessageTrait
      * @return static
      * @throws InvalidArgumentException For invalid header names or values.
      */
-    public function withHeader(string $name, $value): MessageInterface
-    {
+    public function withHeader(string $name, $value): MessageInterface {
         $this->assertHeader($name);
 
         $normalized = strtolower($name);
@@ -228,8 +213,7 @@ trait MessageTrait
      * @return static
      * @throws InvalidArgumentException For invalid header names or values.
      */
-    public function withAddedHeader(string $name, $value): MessageInterface
-    {
+    public function withAddedHeader(string $name, $value): MessageInterface {
         $this->assertHeader($name);
 
         if (! $this->hasHeader($name)) {
@@ -256,8 +240,7 @@ trait MessageTrait
      * @param string $name Case-insensitive header field name to remove.
      * @return static
      */
-    public function withoutHeader(string $name): MessageInterface
-    {
+    public function withoutHeader(string $name): MessageInterface {
         if ($name === '' || ! $this->hasHeader($name)) {
             return clone $this;
         }
@@ -268,16 +251,6 @@ trait MessageTrait
         $new = clone $this;
         unset($new->headers[$original], $new->headerNames[$normalized]);
         return $new;
-    }
-
-    /**
-     * Gets the body of the message.
-     *
-     * @return StreamInterface Returns the body as a stream.
-     */
-    public function getBody(): StreamInterface
-    {
-        return $this->stream;
     }
 
     /**
@@ -293,16 +266,14 @@ trait MessageTrait
      * @return static
      * @throws InvalidArgumentException When the body is not valid.
      */
-    public function withBody(StreamInterface $body): MessageInterface
-    {
+    public function withBody(StreamInterface $body): MessageInterface {
         $new         = clone $this;
-        $new->stream = $body;
+        $new->body = $body;
         return $new;
     }
 
     /** @param StreamInterface|string|resource $stream */
-    private function getStream($stream, string $modeIfNotInstance): StreamInterface
-    {
+    private function getStream($stream, string $modeIfNotInstance): StreamInterface {
         if ($stream instanceof StreamInterface) {
             return $stream;
         }
@@ -326,8 +297,7 @@ trait MessageTrait
      *
      * @param array<non-empty-string, string|string[]> $originalHeaders Headers to filter.
      */
-    private function setHeaders(array $originalHeaders): void
-    {
+    private function setHeaders(array $originalHeaders): void {
         $headerNames = $headers = [];
 
         foreach ($originalHeaders as $header => $value) {
@@ -348,8 +318,7 @@ trait MessageTrait
      *
      * @throws InvalidArgumentException On invalid HTTP protocol version.
      */
-    private function validateProtocolVersion(string $version): void
-    {
+    private function validateProtocolVersion(string $version): void {
         if (empty($version)) {
             throw new InvalidArgumentException(
                 'HTTP protocol version can not be empty'
@@ -367,8 +336,7 @@ trait MessageTrait
     }
 
     /** @return list<string> */
-    private function filterHeaderValue(mixed $values): array
-    {
+    private function filterHeaderValue(mixed $values): array {
         if (! is_array($values)) {
             $values = [$values];
         }
@@ -399,8 +367,7 @@ trait MessageTrait
      * @psalm-assert non-empty-string $name
      * @throws InvalidArgumentException
      */
-    private function assertHeader(mixed $name): void
-    {
+    private function assertHeader(mixed $name): void {
         HeaderSecurity::assertValidName($name);
     }
 }
