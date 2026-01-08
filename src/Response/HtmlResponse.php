@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros\Response;
 
+use InvalidArgumentException;
 use Rodas\Diactoros\Exception;
 use Rodas\Diactoros\Response;
 use Rodas\Diactoros\Stream;

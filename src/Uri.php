@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\UriInterface;
 use SensitiveParameter;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
+use InvalidArgumentException;
+
 use function get_debug_type;
 use function in_array;
 use function is_numeric;

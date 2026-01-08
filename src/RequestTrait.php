@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;

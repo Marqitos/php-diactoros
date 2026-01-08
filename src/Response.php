@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -164,7 +165,7 @@ class Response implements ResponseInterface {
 
         if ($reasonPhrase === '' &&
             isset($this->phrases[$code])) {
-                
+
             $reasonPhrase = $this->phrases[$code];
         }
 

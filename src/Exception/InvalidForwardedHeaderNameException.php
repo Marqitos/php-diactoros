@@ -6,6 +6,8 @@ namespace Rodas\Diactoros\Exception;
 
 use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
 
+use RuntimeException;
+
 use function get_debug_type;
 use function is_string;
 use function sprintf;

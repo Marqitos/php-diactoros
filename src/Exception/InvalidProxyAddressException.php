@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros\Exception;
 
+use RuntimeException;
+
 use function get_debug_type;
 use function sprintf;
 

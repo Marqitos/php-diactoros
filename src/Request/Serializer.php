@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros\Request;
 
+use InvalidArgumentException;
 use Rodas\Diactoros\AbstractSerializer;
 use Rodas\Diactoros\Exception;
 use Rodas\Diactoros\Request;
