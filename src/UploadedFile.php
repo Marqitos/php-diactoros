@@ -1,4 +1,18 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\UploadedFile.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
@@ -6,8 +20,8 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UploadedFileInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\UploadedFileInterface;
 
 use function assert;
 use function dirname;
@@ -33,13 +47,13 @@ use const UPLOAD_ERR_NO_TMP_DIR;
 use const UPLOAD_ERR_OK;
 use const UPLOAD_ERR_PARTIAL;
 
-class UploadedFile implements UploadedFileInterface
-{
+class UploadedFile implements UploadedFileInterface {
+    // TODO: Use Resources
     public const ERROR_MESSAGES = [
         UPLOAD_ERR_OK         => 'There is no error, the file uploaded with success',
         UPLOAD_ERR_INI_SIZE   => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
         UPLOAD_ERR_FORM_SIZE  => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was '
-            . 'specified in the HTML form',
+                               . 'specified in the HTML form',
         UPLOAD_ERR_PARTIAL    => 'The uploaded file was only partially uploaded',
         UPLOAD_ERR_NO_FILE    => 'No file was uploaded',
         UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder',
@@ -47,13 +61,72 @@ class UploadedFile implements UploadedFileInterface
         UPLOAD_ERR_EXTENSION  => 'A PHP extension stopped the file upload.',
     ];
 
-    private readonly int $error;
+    /**
+     * {@inheritdoc}
+     *
+     * @see http://php.net/manual/en/features.file-upload.errors.php
+     *
+     * @var int One of PHP's UPLOAD_ERR_XXX constants.
+     */
+    public private(set) int $error {
+        get => $this->error;
+        set => $this->error = $value;
+    }
 
     private ?string $file = null;
 
     private bool $moved = false;
 
-    private ?StreamInterface $stream = null;
+    public private(set) StreamInterface $stream {
+        get {
+            if ($this->error !== UPLOAD_ERR_OK) {
+                throw Exception\UploadedFileErrorException::dueToStreamUploadError(
+                    self::ERROR_MESSAGES[$this->error]
+                );
+            }
+
+            if ($this->moved) {
+                throw new Exception\UploadedFileAlreadyMovedException();
+            }
+
+            if (isset($this->stream)) {
+                return $this->stream;
+            }
+
+            assert($this->file !== null, 'Always true condition for psalm type safety');
+            $this->stream = new Stream($this->file);
+            return $this->stream;
+        }
+        set => $this->stream = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @var int|null The file size in bytes or null if unknown.
+     */
+    public private(set) ?int $size {
+        get => $this->size;
+        set => $this->size = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @var string|null The filename sent by the client or null if none was provided.
+     */
+    public private(set) ?string $clientFilename = null {
+        get => $this->clientFilename;
+        set => $this->clientFilename = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) ?string $clientMediaType = null {
+        get => $this->clientMediaType;
+        set => $this->clientMediaType = $value;
+    }
 
     /**
      * @param string|resource|StreamInterface $streamOrFile
@@ -61,11 +134,14 @@ class UploadedFile implements UploadedFileInterface
      */
     public function __construct(
         $streamOrFile,
-        private readonly ?int $size,
+        ?int $size,
         int $errorStatus,
-        private readonly ?string $clientFilename = null,
-        private readonly ?string $clientMediaType = null
+        ?string $clientFilename = null,
+        ?string $clientMediaType = null
     ) {
+        $this->size = $size;
+        $this->clientFilename = $clientFilename;
+        $this->clientMediaType = $clientMediaType;
         if ($errorStatus === UPLOAD_ERR_OK) {
             if (is_string($streamOrFile)) {
                 $this->file = $streamOrFile;
@@ -74,7 +150,8 @@ class UploadedFile implements UploadedFileInterface
                 $this->stream = new Stream($streamOrFile);
             }
 
-            if ($this->file === null && $this->stream === null) {
+            if ($this->file === null &&
+               ! isset($this->stream)) {
                 if (! $streamOrFile instanceof StreamInterface) {
                     throw new InvalidArgumentException('Invalid stream or file provided for UploadedFile');
                 }
@@ -82,39 +159,13 @@ class UploadedFile implements UploadedFileInterface
             }
         }
 
-        if (0 > $errorStatus || 8 < $errorStatus) {
+        if (0 > $errorStatus ||
+            8 < $errorStatus) {
             throw new InvalidArgumentException(
                 'Invalid error status for UploadedFile; must be an UPLOAD_ERR_* constant'
             );
         }
         $this->error = $errorStatus;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws Exception\UploadedFileAlreadyMovedException If the upload was not successful.
-     */
-    #[Override]
-    public function getStream(): StreamInterface
-    {
-        if ($this->error !== UPLOAD_ERR_OK) {
-            throw Exception\UploadedFileErrorException::dueToStreamUploadError(
-                self::ERROR_MESSAGES[$this->error]
-            );
-        }
-
-        if ($this->moved) {
-            throw new Exception\UploadedFileAlreadyMovedException();
-        }
-
-        if ($this->stream instanceof StreamInterface) {
-            return $this->stream;
-        }
-
-        assert($this->file !== null, 'Always true condition for psalm type safety');
-        $this->stream = new Stream($this->file);
-        return $this->stream;
     }
 
     /**
@@ -162,7 +213,7 @@ class UploadedFile implements UploadedFileInterface
                 // Non-SAPI environment, or no filename present
                 $this->writeFile($targetPath);
 
-                if ($this->stream instanceof StreamInterface) {
+                if (isset($this->stream)) {
                     $this->stream->close();
                 }
                 if (is_string($this->file) && file_exists($this->file)) {
@@ -181,51 +232,6 @@ class UploadedFile implements UploadedFileInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @return int|null The file size in bytes or null if unknown.
-     */
-    #[Override]
-    public function getSize(): ?int
-    {
-        return $this->size;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @see http://php.net/manual/en/features.file-upload.errors.php
-     *
-     * @return int One of PHP's UPLOAD_ERR_XXX constants.
-     */
-    #[Override]
-    public function getError(): int
-    {
-        return $this->error;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return string|null The filename sent by the client or null if none
-     *     was provided.
-     */
-    #[Override]
-    public function getClientFilename(): ?string
-    {
-        return $this->clientFilename;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getClientMediaType(): ?string
-    {
-        return $this->clientMediaType;
-    }
-
-    /**
      * Write internal stream to given path
      */
     private function writeFile(string $path): void
@@ -235,7 +241,7 @@ class UploadedFile implements UploadedFileInterface
             throw Exception\UploadedFileErrorException::dueToUnwritablePath();
         }
 
-        $stream = $this->getStream();
+        $stream = $this->stream;
         $stream->rewind();
         while (! $stream->eof()) {
             fwrite($handle, $stream->read(4096));
