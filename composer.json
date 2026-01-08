@@ -37,7 +37,7 @@
     },
     "require": {
         "php": "~8.4.0 || ~8.5.0",
-        "rodas/psr-scaffold": "^1.0"
+        "rodas/psr-scaffold": "^2.0"
     },
     "require-dev": {
         "ext-curl": "*",
