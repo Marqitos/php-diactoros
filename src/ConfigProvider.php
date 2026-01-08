@@ -1,15 +1,29 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\ConfigProvider.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UploadedFileFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Rodas\Psr\Http\Message\RequestFactoryInterface;
+use Rodas\Psr\Http\Message\ResponseFactoryInterface;
+use Rodas\Psr\Http\Message\ServerRequestFactoryInterface;
+use Rodas\Psr\Http\Message\StreamFactoryInterface;
+use Rodas\Psr\Http\Message\UploadedFileFactoryInterface;
+use Rodas\Psr\Http\Message\UriFactoryInterface;
 
 class ConfigProvider {
     public const CONFIG_KEY                  = 'rodas-diactoros';

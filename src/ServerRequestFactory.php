@@ -1,4 +1,18 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\ServerRequestFactory.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
@@ -8,8 +22,9 @@ use InvalidArgumentException;
 use Override;
 use Rodas\Diactoros\ServerRequestFilter\FilterServerRequestInterface;
 use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\RequestMethod;
+use Rodas\Psr\Http\Message\ServerRequestFactoryInterface;
+use Rodas\Psr\Http\Message\ServerRequestInterface;
 
 use function array_filter;
 use function array_key_exists;
@@ -398,8 +413,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * {@inheritDoc}
      */
     #[Override]
-    public function createServerRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
-    {
+    public function createServerRequest(RequestMethod|string $method, $uri, array $serverParams = []): ServerRequestInterface {
         $uploadedFiles = [];
 
         return new ServerRequest(
