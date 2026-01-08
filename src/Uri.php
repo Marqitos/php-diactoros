@@ -163,8 +163,7 @@ class Uri implements UriInterface, Stringable {
      */
     private ?string $uriString = null;
 
-    public function __construct(string $uri = '')
-    {
+    public function __construct(string $uri = '') {
         if ('' === $uri) {
             return;
         }
@@ -179,8 +178,7 @@ class Uri implements UriInterface, Stringable {
      * Since cloning usually is for purposes of mutation, we reset the
      * $uriString property so it will be re-calculated.
      */
-    public function __clone()
-    {
+    public function __clone() {
         $this->uriString = null;
     }
 
@@ -188,8 +186,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function __toString(): string
-    {
+    public function __toString(): string {
         if (null !== $this->uriString) {
             return $this->uriString;
         }
@@ -210,8 +207,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withScheme(string $scheme): UriInterface
-    {
+    public function withScheme(string $scheme): UriInterface {
         $scheme = $this->filterScheme($scheme);
 
         if ($scheme === $this->scheme) {
@@ -264,8 +260,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withHost(string $host): UriInterface
-    {
+    public function withHost(string $host): UriInterface {
         if (strtolower($host) === $this->host) {
             // Do nothing if no change was made.
             return $this;
@@ -281,8 +276,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withPort(?int $port): UriInterface
-    {
+    public function withPort(?int $port): UriInterface {
         if ($port === $this->port) {
             // Do nothing if no change was made.
             return $this;
@@ -335,8 +329,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withQuery(string $query): UriInterface
-    {
+    public function withQuery(string $query): UriInterface {
         if (str_contains($query, '#')) {
             throw new InvalidArgumentException(
                 'Query string must not include a URI fragment'
@@ -360,8 +353,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withFragment(string $fragment): UriInterface
-    {
+    public function withFragment(string $fragment): UriInterface {
         $fragment = $this->filterFragment($fragment);
 
         if ($fragment === $this->fragment) {
@@ -381,8 +373,7 @@ class Uri implements UriInterface, Stringable {
      * @psalm-suppress InaccessibleProperty Method is only called in {@see Uri::__construct} and thus immutability is
      *                                      still given.
      */
-    private function parseUri(string $uri): void
-    {
+    private function parseUri(string $uri): void {
         $parts = parse_url($uri);
 
         if (false === $parts) {
@@ -491,8 +482,7 @@ class Uri implements UriInterface, Stringable {
     /**
      * Filters a part of user info in a URI to ensure it is properly encoded.
      */
-    private function filterUserInfoPart(string $part): string
-    {
+    private function filterUserInfoPart(string $part): string {
         $part = $this->filterInvalidUtf8($part);
 
         /**
@@ -511,8 +501,7 @@ class Uri implements UriInterface, Stringable {
     /**
      * Filters the path of a URI to ensure it is properly encoded.
      */
-    private function filterPath(string $path): string
-    {
+    private function filterPath(string $path): string {
         $path = $this->filterInvalidUtf8($path);
 
         $result = preg_replace_callback(
@@ -527,8 +516,7 @@ class Uri implements UriInterface, Stringable {
     /**
      * Encode invalid UTF-8 characters in given string. All other characters are unchanged.
      */
-    private function filterInvalidUtf8(string $string): string
-    {
+    private function filterInvalidUtf8(string $string): string {
         // check if given string contains only valid UTF-8 characters
         if (preg_match('//u', $string)) {
             return $string;
@@ -549,8 +537,7 @@ class Uri implements UriInterface, Stringable {
      *
      * Ensures that the values in the query string are properly urlencoded.
      */
-    private function filterQuery(string $query): string
-    {
+    private function filterQuery(string $query): string {
         if ('' !== $query && str_starts_with($query, '?')) {
             $query = substr($query, 1);
         }
@@ -577,8 +564,7 @@ class Uri implements UriInterface, Stringable {
      *
      * @return array{0:string, 1:string|null} A value with exactly two elements, key and value
      */
-    private function splitQueryValue(string $value): array
-    {
+    private function splitQueryValue(string $value): array {
         $data = explode('=', $value, 2);
         if (! isset($data[1])) {
             $data[1] = null;
@@ -589,8 +575,7 @@ class Uri implements UriInterface, Stringable {
     /**
      * Filter a fragment value to ensure it is properly encoded.
      */
-    private function filterFragment(string $fragment): string
-    {
+    private function filterFragment(string $fragment): string {
         if ('' !== $fragment && str_starts_with($fragment, '#')) {
             $fragment = '%23' . substr($fragment, 1);
         }
@@ -601,8 +586,7 @@ class Uri implements UriInterface, Stringable {
     /**
      * Filter a query string key or value, or a fragment.
      */
-    private function filterQueryOrFragment(string $value): string
-    {
+    private function filterQueryOrFragment(string $value): string {
         $value = $this->filterInvalidUtf8($value);
 
         $result = preg_replace_callback(
@@ -620,8 +604,7 @@ class Uri implements UriInterface, Stringable {
      * @param array<string> $matches
      * @psalm-pure
      */
-    private function urlEncodeChar(array $matches): string
-    {
+    private function urlEncodeChar(array $matches): string {
         return rawurlencode($matches[0]);
     }
 }
