@@ -21,6 +21,7 @@ namespace Rodas\Diactoros;
 use InvalidArgumentException;
 use Override;
 use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\StatusCode;
 use Rodas\Psr\Http\Message\StreamInterface;
 use Rodas\Psr\Http\Message\UriInterface;
 
@@ -63,24 +64,5 @@ class Request implements RequestInterface {
             return $headers;
         }
         set => $this->headers = $value;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getHeader(string $name): array {
-        if (empty($name) || ! $this->hasHeader($name)) {
-            if (strtolower($name) === 'host' &&
-                $this->uri->getHost()) {
-                return [$this->getHostFromUri()];
-            }
-
-            return [];
-        }
-
-        $header = $this->headerNames[strtolower($name)];
-
-        return $this->headers[$header];
     }
 }
