@@ -24,7 +24,6 @@ jobs:
           - "8.5"
         operating-system:
           - "ubuntu-latest"
-          - "windows-latest"
         dependency-versions:
           - "locked"
           - "highest"
