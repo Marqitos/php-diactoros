@@ -1,4 +1,18 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
@@ -8,7 +22,7 @@ use Rodas\Diactoros\Exception\InvalidForwardedHeaderNameException;
 use Rodas\Diactoros\Exception\InvalidProxyAddressException;
 use Rodas\Diactoros\UriFactory;
 use Override;
-use Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\ServerRequestInterface;
 
 use function array_values;
 use function assert;
@@ -32,8 +46,7 @@ use const FILTER_VALIDATE_IP;
  * in order to return a new request that composes a URI instance that reflects
  * those headers.
  */
-final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
-{
+final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface {
     public const HEADER_HOST  = 'X-FORWARDED-HOST';
     public const HEADER_PORT  = 'X-FORWARDED-PORT';
     public const HEADER_PROTO = 'X-FORWARDED-PROTO';
@@ -53,12 +66,10 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
     private function __construct(
         private readonly array $trustedProxies = [],
         private readonly array $trustedHeaders = []
-    ) {
-    }
+    ) { }
 
     #[Override]
-    public function __invoke(ServerRequestInterface $request): ServerRequestInterface
-    {
+    public function __invoke(ServerRequestInterface $request): ServerRequestInterface {
         $remoteAddress = $request->getServerParams()['REMOTE_ADDR'] ?? '';
 
         if ('' === $remoteAddress || ! is_string($remoteAddress)) {
@@ -140,8 +151,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
      * are routed via a reverse proxy (e.g., a load balancer, a server such as
      * Caddy, when using Traefik, etc.).
      */
-    public static function trustAny(): self
-    {
+    public static function trustAny(): self {
         return self::trustProxies(['*']);
     }
 
@@ -163,8 +173,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
      *     the list is empty, all X-Forwarded headers are trusted.
      * @throws InvalidForwardedHeaderNameException
      */
-    public static function trustReservedSubnets(array $trustedHeaders = self::X_FORWARDED_HEADERS): self
-    {
+    public static function trustReservedSubnets(array $trustedHeaders = self::X_FORWARDED_HEADERS): self {
         return self::trustProxies([
             '10.0.0.0/8',
             '127.0.0.0/8',
@@ -176,8 +185,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
         ], $trustedHeaders);
     }
 
-    private function isFromTrustedProxy(string $remoteAddress): bool
-    {
+    private function isFromTrustedProxy(string $remoteAddress): bool {
         foreach ($this->trustedProxies as $proxy) {
             if (IPRange::matches($remoteAddress, $proxy)) {
                 return true;
@@ -188,8 +196,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
     }
 
     /** @throws InvalidForwardedHeaderNameException */
-    private static function validateTrustedHeaders(array $headers): void
-    {
+    private static function validateTrustedHeaders(array $headers): void {
         foreach ($headers as $header) {
             if (! in_array($header, self::X_FORWARDED_HEADERS, true)) {
                 throw InvalidForwardedHeaderNameException::forHeader($header);
@@ -202,8 +209,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
      * @return list<non-empty-string>
      * @throws InvalidProxyAddressException
      */
-    private static function normalizeProxiesList(array $proxyCIDRList): array
-    {
+    private static function normalizeProxiesList(array $proxyCIDRList): array {
         $foundWildcard = false;
 
         foreach ($proxyCIDRList as $index => $cidr) {
@@ -226,8 +232,7 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
         return array_values($proxyCIDRList);
     }
 
-    private static function validateProxyCIDR(mixed $cidr): bool
-    {
+    private static function validateProxyCIDR(mixed $cidr): bool {
         if (! is_string($cidr) || '' === $cidr) {
             return false;
         }
