@@ -6,10 +6,10 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriInterface;
+use Rodas\Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\UploadedFileInterface;
+use Rodas\Psr\Http\Message\UriInterface;
 
 use function array_key_exists;
 use function gettype;
@@ -34,9 +34,60 @@ use function sprintf;
 class ServerRequest implements ServerRequestInterface {
     use RequestTrait;
 
-    private array $attributes = [];
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) array $attributes = [] {
+        get => $this->attributes;
+        set => $this->attributes = $value;
+    }
 
-    private array $uploadedFiles;
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) array $cookieParams = [] {
+        get => $this->cookieParams;
+        set => $this->cookieParams = $value;
+    }
+
+    /**
+     * List of all registered headers, as key => array of values.
+     *
+     * @var array<non-empty-string, list<string>>
+     */
+    public protected(set) array $headers = [] {
+        get {
+            $headers = $this->headers;
+            if (! $this->hasHeader('host') &&
+                $this->uri->getHost()) {
+                $headers['Host'] = [$this->getHostFromUri()];
+            }
+
+            return $headers;
+        }
+        set => $this->headers = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) array $queryParams = [] {
+        get => $this->queryParams;
+        set => $this->queryParams = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) array $serverParams = [] {
+        get => $this->serverParams;
+        set => $this->serverParams = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public private(set) array $uploadedFiles;
 
     /**
      * @param array $serverParams Server parameters, typically from $_SERVER
@@ -52,14 +103,14 @@ class ServerRequest implements ServerRequestInterface {
      * @throws InvalidArgumentException For any invalid value.
      */
     public function __construct(
-        private array $serverParams = [],
+        array $serverParams = [],
         array $uploadedFiles = [],
         null|string|UriInterface $uri = null,
-        ?string $method = null,
+        RequestMethod|string|null $method = null,
         $body = 'php://input',
         array $headers = [],
-        private array $cookieParams = [],
-        private array $queryParams = [],
+        array $cookieParams = [],
+        array $queryParams = [],
         private $parsedBody = null,
         string $protocol = '1.1'
     ) {
@@ -70,24 +121,10 @@ class ServerRequest implements ServerRequestInterface {
         }
 
         $this->initialize($uri, $method, $body, $headers);
+        $this->cookieParams  = $cookieParams;
         $this->uploadedFiles = $uploadedFiles;
+        $this->serverParams  = $serverParams;
         $this->protocol      = $protocol;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getServerParams(): array {
-        return $this->serverParams;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getUploadedFiles(): array {
-        return $this->uploadedFiles;
     }
 
     /**
@@ -105,26 +142,10 @@ class ServerRequest implements ServerRequestInterface {
      * {@inheritdoc}
      */
     #[Override]
-    public function getCookieParams(): array {
-        return $this->cookieParams;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
     public function withCookieParams(array $cookies): ServerRequest {
         $new               = clone $this;
         $new->cookieParams = $cookies;
         return $new;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getQueryParams(): array {
-        return $this->queryParams;
     }
 
     /**
@@ -162,14 +183,6 @@ class ServerRequest implements ServerRequestInterface {
         $new             = clone $this;
         $new->parsedBody = $data;
         return $new;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getAttributes(): array {
-        return $this->attributes;
     }
 
     /**
