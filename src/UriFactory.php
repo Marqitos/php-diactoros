@@ -1,4 +1,18 @@
 <?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\UriFactory.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
 
 declare(strict_types=1);
 
@@ -6,8 +20,8 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface;
+use Rodas\Psr\Http\Message\UriFactoryInterface;
+use Rodas\Psr\Http\Message\UriInterface;
 
 use function array_change_key_case;
 use function array_key_exists;
@@ -31,14 +45,12 @@ use function substr;
 
 use const CASE_LOWER;
 
-class UriFactory implements UriFactoryInterface
-{
+class UriFactory implements UriFactoryInterface {
     /**
      * {@inheritDoc}
      */
     #[Override]
-    public function createUri(string $uri = ''): UriInterface
-    {
+    public function createUri(string $uri = ''): UriInterface {
         return new Uri($uri);
     }
 
@@ -48,8 +60,7 @@ class UriFactory implements UriFactoryInterface
      * @param array<non-empty-string, list<string>|int|float|string> $server SAPI parameters
      * @param array<string, string|list<string>> $headers
      */
-    public static function createFromSapi(array $server, array $headers): Uri
-    {
+    public static function createFromSapi(array $server, array $headers): Uri {
         $uri = new Uri('');
 
         $isHttps = false;
@@ -99,8 +110,7 @@ class UriFactory implements UriFactoryInterface
      * @param T $default Default value to return if header not found
      * @return string|T
      */
-    private static function getHeaderFromArray(string $name, array $headers, $default = null)
-    {
+    private static function getHeaderFromArray(string $name, array $headers, $default = null) {
         $header  = strtolower($name);
         $headers = array_change_key_case($headers, CASE_LOWER);
         if (! array_key_exists($header, $headers)) {
@@ -121,8 +131,7 @@ class UriFactory implements UriFactoryInterface
      * @return array{0:string, 1:int|null} Array of two items, host and port,
      *     in that order (can be passed to a list() operation).
      */
-    private static function marshalHostAndPort(array $server, array $headers): array
-    {
+    private static function marshalHostAndPort(array $server, array $headers): array {
         /** @var array{string, null} $defaults */
         static $defaults = ['', null];
 
@@ -162,8 +171,7 @@ class UriFactory implements UriFactoryInterface
      * @return array{string, int|null} Array of two items, host and port,
      *     in that order (can be passed to a list() operation).
      */
-    private static function marshalIpv6HostAndPort(array $server, ?int $port): array
-    {
+    private static function marshalIpv6HostAndPort(array $server, ?int $port): array {
         $host             = '[' . (string) $server['SERVER_ADDR'] . ']';
         $port           ??= 80;
         $portSeparatorPos = strrpos($host, ':');
@@ -190,8 +198,7 @@ class UriFactory implements UriFactoryInterface
      * - REQUEST_URI
      * - ORIG_PATH_INFO
      */
-    private static function marshalRequestPath(array $server): string
-    {
+    private static function marshalRequestPath(array $server): string {
         // IIS7 with URL Rewrite: make sure we get the unencoded url
         // (double slash problem).
         /** @var string|array<string>|null $iisUrlRewritten */
@@ -219,8 +226,7 @@ class UriFactory implements UriFactoryInterface
         return $origPathInfo;
     }
 
-    private static function marshalHttpsValue(mixed $https): bool
-    {
+    private static function marshalHttpsValue(mixed $https): bool {
         if (is_bool($https)) {
             return $https;
         }
@@ -242,8 +248,7 @@ class UriFactory implements UriFactoryInterface
      *     passed to a list() operation).
      * @psalm-mutation-free
      */
-    public static function marshalHostAndPortFromHeader(string $host): array
-    {
+    public static function marshalHostAndPortFromHeader(string $host): array {
         $port = null;
 
         // works for regname, IPv4 & IPv6
