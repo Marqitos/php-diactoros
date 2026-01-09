@@ -48,7 +48,7 @@ final class CallbackStreamTest extends TestCase {
 
     public function testGetSize(): void {
         $stream = new CallbackStream(static function (): void { });
-        $ret    = $stream->getSize();
+        $ret    = $stream->size;
         $this->assertNull($ret);
     }
 
@@ -62,19 +62,19 @@ final class CallbackStreamTest extends TestCase {
 
     public function testIsSeekable(): void {
         $stream = new CallbackStream(static function (): void { });
-        $ret    = $stream->isSeekable();
+        $ret    = $stream->isSeekable;
         $this->assertFalse($ret);
     }
 
     public function testIsWritable(): void {
         $stream = new CallbackStream(static function (): void { });
-        $ret    = $stream->isWritable();
+        $ret    = $stream->isWritable;
         $this->assertFalse($ret);
     }
 
     public function testIsReadable(): void {
         $stream = new CallbackStream(static function (): void { });
-        $ret    = $stream->isReadable();
+        $ret    = $stream->isReadable;
         $this->assertFalse($ret);
     }
 
@@ -164,7 +164,7 @@ final class CallbackStreamTest extends TestCase {
     #[DataProvider('phpCallbacksForStreams')]
     public function testAllowsArbitraryPhpCallbacks(callable $callback, string $expected): void {
         $stream   = new CallbackStream($callback);
-        $contents = $stream->getContents();
+        $contents = $stream->contents;
         $this->assertSame($expected, $contents);
     }
      */

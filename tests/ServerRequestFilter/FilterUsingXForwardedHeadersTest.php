@@ -32,11 +32,11 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustProxies(['192.168.1.0/24']);
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertNotSame($request->getUri(), $filteredUri);
-        $this->assertSame('example.com', $filteredUri->getHost());
-        $this->assertSame(4433, $filteredUri->getPort());
-        $this->assertSame('https', $filteredUri->getScheme());
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertNotSame($request->uri, $filteredUri);
+        $this->assertSame('example.com', $filteredUri->host);
+        $this->assertSame(4433, $filteredUri->port);
+        $this->assertSame('https', $filteredUri->scheme);
     }
 
     public function testTrustingStringProxyWithSpecificTrustedHeadersTrustsOnlyThoseHeadersForTrustedProxy(): void
@@ -61,11 +61,11 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         );
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertNotSame($request->getUri(), $filteredUri);
-        $this->assertSame('example.com', $filteredUri->getHost());
-        $this->assertSame(80, $filteredUri->getPort());
-        $this->assertSame('https', $filteredUri->getScheme());
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertNotSame($request->uri, $filteredUri);
+        $this->assertSame('example.com', $filteredUri->host);
+        $this->assertSame(80, $filteredUri->port);
+        $this->assertSame('https', $filteredUri->scheme);
     }
 
     public function testFilterDoesNothingWhenAddressNotFromTrustedProxy(): void
@@ -87,8 +87,8 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustProxies(['192.168.1.0/24']);
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertSame($request->getUri(), $filteredUri);
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertSame($request->uri, $filteredUri);
     }
 
     /** @psalm-return iterable<string, array{0: string}> */
@@ -119,11 +119,11 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustProxies(['192.168.1.0/24', '10.1.0.0/16']);
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertNotSame($request->getUri(), $filteredUri);
-        $this->assertSame('example.com', $filteredUri->getHost());
-        $this->assertSame(4433, $filteredUri->getPort());
-        $this->assertSame('https', $filteredUri->getScheme());
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertNotSame($request->uri, $filteredUri);
+        $this->assertSame('example.com', $filteredUri->host);
+        $this->assertSame(4433, $filteredUri->port);
+        $this->assertSame('https', $filteredUri->scheme);
     }
 
     #[DataProvider('trustedProxyList')]
@@ -149,11 +149,11 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         );
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertNotSame($request->getUri(), $filteredUri);
-        $this->assertSame('example.com', $filteredUri->getHost());
-        $this->assertSame(80, $filteredUri->getPort());
-        $this->assertSame('https', $filteredUri->getScheme());
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertNotSame($request->uri, $filteredUri);
+        $this->assertSame('example.com', $filteredUri->host);
+        $this->assertSame(80, $filteredUri->port);
+        $this->assertSame('https', $filteredUri->scheme);
     }
 
     /** @psalm-return iterable<string, array{0: string}> */
@@ -290,11 +290,11 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustReservedSubnets();
 
         $filteredRequest = $filter($request);
-        $filteredUri     = $filteredRequest->getUri();
-        $this->assertNotSame($request->getUri(), $filteredUri);
-        $this->assertSame('example.com', $filteredUri->getHost());
-        $this->assertSame(4433, $filteredUri->getPort());
-        $this->assertSame('https', $filteredUri->getScheme());
+        $filteredUri     = $filteredRequest->uri;
+        $this->assertNotSame($request->uri, $filteredUri);
+        $this->assertSame('example.com', $filteredUri->host);
+        $this->assertSame(4433, $filteredUri->port);
+        $this->assertSame('https', $filteredUri->scheme);
     }
 
     /** @psalm-return iterable<string, array{0: string}> */
@@ -366,8 +366,8 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustReservedSubnets();
 
         $filteredRequest = $filter($request);
-        $uri             = $filteredRequest->getUri();
-        $this->assertSame($expectedScheme, $uri->getScheme());
+        $uri             = $filteredRequest->uri;
+        $this->assertSame($expectedScheme, $uri->scheme);
     }
 
     /**
@@ -402,10 +402,10 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustAny();
 
         $filteredRequest = $filter($request);
-        $uri             = $filteredRequest->getUri();
-        self::assertSame('example.org', $uri->getHost());
+        $uri             = $filteredRequest->uri;
+        self::assertSame('example.org', $uri->host);
         self::assertNull(
-            $uri->getPort(),
+            $uri->port,
             'Port is omitted due to the fact that `https` protocol was used and port 80 is being ignored due'
             . ' to the availability of `X-Forwarded-Port'
         );
@@ -429,8 +429,8 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
         $filter = FilterUsingXForwardedHeaders::trustAny();
 
         $filteredRequest = $filter($request);
-        $uri             = $filteredRequest->getUri();
-        self::assertSame('example.org', $uri->getHost());
-        self::assertSame(8080, $uri->getPort());
+        $uri             = $filteredRequest->uri;
+        self::assertSame('example.org', $uri->host);
+        self::assertSame(8080, $uri->port);
     }
 }

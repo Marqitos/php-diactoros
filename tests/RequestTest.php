@@ -12,8 +12,8 @@ use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\UriInterface;
+use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\UriInterface;
 
 final class RequestTest extends TestCase
 {
@@ -55,16 +55,16 @@ final class RequestTest extends TestCase
 
     public function testReturnsUnpopulatedUriByDefault(): void
     {
-        $uri = $this->request->getUri();
+        $uri = $this->request->uri;
         $this->assertInstanceOf(UriInterface::class, $uri);
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertEmpty($uri->getScheme());
-        $this->assertEmpty($uri->getUserInfo());
-        $this->assertEmpty($uri->getHost());
-        $this->assertNull($uri->getPort());
-        $this->assertEmpty($uri->getPath());
-        $this->assertEmpty($uri->getQuery());
-        $this->assertEmpty($uri->getFragment());
+        $this->assertEmpty($uri->scheme);
+        $this->assertEmpty($uri->userInfo);
+        $this->assertEmpty($uri->host);
+        $this->assertNull($uri->port);
+        $this->assertEmpty($uri->path);
+        $this->assertEmpty($uri->query);
+        $this->assertEmpty($uri->fragment);
     }
 
     public function testWithUriReturnsNewInstanceWithNewUri(): void
@@ -74,7 +74,7 @@ final class RequestTest extends TestCase
         $request2 = $request->withUri(new Uri('/baz/bat?foo=bar'));
         $this->assertNotSame($this->request, $request2);
         $this->assertNotSame($request, $request2);
-        $this->assertSame('/baz/bat?foo=bar', (string) $request2->getUri());
+        $this->assertSame('/baz/bat?foo=bar', (string) $request2->uri);
     }
 
     public function testConstructorCanAcceptAllMessageParts(): void
@@ -91,7 +91,7 @@ final class RequestTest extends TestCase
             $headers
         );
 
-        $this->assertSame($uri, $request->getUri());
+        $this->assertSame($uri, $request->uri);
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame($body, $request->getBody());
         $testHeaders = $request->getHeaders();

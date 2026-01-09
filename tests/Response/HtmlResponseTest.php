@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Rodas\Diactoros\Response\HtmlResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 final class HtmlResponseTest extends TestCase
 {

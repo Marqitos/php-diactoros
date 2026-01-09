@@ -7,8 +7,8 @@ namespace Rodas\Test\Diactoros\StaticAnalysis;
 use Rodas\Diactoros\Request;
 use Rodas\Diactoros\ServerRequest;
 use Rodas\Diactoros\Uri;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\ServerRequestInterface;
 
 final class RequestInterfaceStaticReturnTypes
 {

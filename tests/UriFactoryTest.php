@@ -14,10 +14,8 @@ use function sprintf;
 use function str_contains;
 use function strtolower;
 
-final class UriFactoryTest extends TestCase
-{
-    public function testCreateFromSapiUsesIISUnencodedUrlValueIfPresentAndUrlWasRewritten(): void
-    {
+final class UriFactoryTest extends TestCase {
+    public function testCreateFromSapiUsesIISUnencodedUrlValueIfPresentAndUrlWasRewritten(): void {
         $server = [
             'IIS_WasUrlRewritten' => '1',
             'UNENCODED_URL'       => '/foo/bar',
@@ -25,18 +23,17 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame($server['UNENCODED_URL'], $uri->getPath());
+        $this->assertSame($server['UNENCODED_URL'], $uri->path);
     }
 
-    public function testCreateFromSapiStripsSchemeHostAndPortInformationWhenPresent(): void
-    {
+    public function testCreateFromSapiStripsSchemeHostAndPortInformationWhenPresent(): void {
         $server = [
             'REQUEST_URI' => 'http://example.com:8000/foo/bar',
         ];
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame('/foo/bar', $uri->getPath());
+        $this->assertSame('/foo/bar', $uri->path);
     }
 
     public function testCreateFromSapiUsesOrigPathInfoIfPresent(): void
@@ -47,7 +44,7 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame('/foo/bar', $uri->getPath());
+        $this->assertSame('/foo/bar', $uri->path);
     }
 
     public function testCreateFromSapiFallsBackToRoot(): void
@@ -56,7 +53,7 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame('/', $uri->getPath());
+        $this->assertSame('/', $uri->path);
     }
 
     public function testMarshalHostAndPortUsesHostHeaderWhenPresent(): void
@@ -65,8 +62,8 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi([], $headers);
 
-        $this->assertSame('example.com', $uri->getHost());
-        $this->assertNull($uri->getPort());
+        $this->assertSame('example.com', $uri->host);
+        $this->assertNull($uri->port);
     }
 
     public function testMarshalHostAndPortWillDetectPortInHostHeaderWhenPresent(): void
@@ -75,16 +72,16 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi([], $headers);
 
-        $this->assertSame('example.com', $uri->getHost());
-        $this->assertSame(8000, $uri->getPort());
+        $this->assertSame('example.com', $uri->host);
+        $this->assertSame(8000, $uri->port);
     }
 
     public function testMarshalHostAndPortReturnsEmptyValuesIfNoHostHeaderAndNoServerName(): void
     {
         $uri = UriFactory::createFromSapi([], []);
 
-        $this->assertSame('', $uri->getHost());
-        $this->assertNull($uri->getPort());
+        $this->assertSame('', $uri->host);
+        $this->assertNull($uri->port);
     }
 
     public function testMarshalHostAndPortReturnsServerNameForHostWhenPresent(): void
@@ -96,8 +93,8 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, $headers);
 
-        $this->assertSame('example.com', $uri->getHost());
-        $this->assertNull($uri->getPort());
+        $this->assertSame('example.com', $uri->host);
+        $this->assertNull($uri->port);
     }
 
     public function testMarshalHostAndPortReturnsServerPortForPortWhenPresentWithServerName(): void
@@ -109,8 +106,8 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame('example.com', $uri->getHost());
-        $this->assertSame(8000, $uri->getPort());
+        $this->assertSame('example.com', $uri->host);
+        $this->assertSame(8000, $uri->port);
     }
 
     public function testMarshalHostAndPortReturnsServerNameForHostIfServerAddrPresentButHostIsNotIpv6Address(): void
@@ -122,7 +119,7 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame('example.com', $uri->getHost());
+        $this->assertSame('example.com', $uri->host);
     }
 
     public function testMarshalHostAndPortReturnsServerAddrForHostIfPresentAndHostIsIpv6Address(): void
@@ -135,8 +132,8 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->getHost());
-        $this->assertSame(8000, $uri->getPort());
+        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->host);
+        $this->assertSame(8000, $uri->port);
     }
 
     public function testMarshalHostAndPortWillDetectPortInIpv6StyleHost(): void
@@ -148,8 +145,8 @@ final class UriFactoryTest extends TestCase
 
         $uri = UriFactory::createFromSapi($server, []);
 
-        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->getHost());
-        $this->assertNull($uri->getPort());
+        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->host);
+        $this->assertNull($uri->port);
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
@@ -175,7 +172,7 @@ final class UriFactoryTest extends TestCase
         $uri = UriFactory::createFromSapi($server, $headers);
 
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertSame('https', $uri->getScheme());
+        $this->assertSame('https', $uri->scheme);
     }
 
     /** @return iterable<string, array{non-empty-string, 'off'|'OFF'}> */
@@ -206,7 +203,7 @@ final class UriFactoryTest extends TestCase
         $uri = UriFactory::createFromSapi($server, $headers);
 
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertSame('http', $uri->getScheme());
+        $this->assertSame('http', $uri->scheme);
     }
 
     public function testMarshalUriStripsQueryStringFromRequestUri(): void
@@ -221,7 +218,7 @@ final class UriFactoryTest extends TestCase
         $uri = UriFactory::createFromSapi($server, $headers);
 
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertSame('/foo/bar', $uri->getPath());
+        $this->assertSame('/foo/bar', $uri->path);
     }
 
     public function testMarshalUriInjectsQueryStringFromServer(): void
@@ -237,7 +234,7 @@ final class UriFactoryTest extends TestCase
         $uri = UriFactory::createFromSapi($server, $headers);
 
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertSame('bar=baz', $uri->getQuery());
+        $this->assertSame('bar=baz', $uri->query);
     }
 
     public function testMarshalUriInjectsFragmentFromServer(): void
@@ -252,7 +249,7 @@ final class UriFactoryTest extends TestCase
         $uri = UriFactory::createFromSapi($server, $headers);
 
         $this->assertInstanceOf(Uri::class, $uri);
-        $this->assertSame('foo', $uri->getFragment());
+        $this->assertSame('foo', $uri->fragment);
     }
 
     public function testMarshalRequestUriPrefersRequestUriServerParamWhenXOriginalUrlButNoXRewriteUrlPresent(): void
@@ -265,6 +262,6 @@ final class UriFactoryTest extends TestCase
         ];
 
         $uri = UriFactory::createFromSapi($server, $headers);
-        $this->assertSame('/requested/path', $uri->getPath());
+        $this->assertSame('/requested/path', $uri->path);
     }
 }

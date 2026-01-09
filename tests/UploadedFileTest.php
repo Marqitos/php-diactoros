@@ -35,8 +35,7 @@ use const UPLOAD_ERR_NO_TMP_DIR;
 use const UPLOAD_ERR_OK;
 use const UPLOAD_ERR_PARTIAL;
 
-final class UploadedFileTest extends TestCase
-{
+final class UploadedFileTest extends TestCase {
     /** @var false|null|string */
     private $orgFile;
 
@@ -44,27 +43,28 @@ final class UploadedFileTest extends TestCase
     private $tmpFile;
 
     #[Override]
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         $this->tmpFile = null;
         $this->orgFile = null;
     }
 
     #[Override]
-    protected function tearDown(): void
-    {
-        if (is_string($this->tmpFile) && file_exists($this->tmpFile)) {
+    protected function tearDown(): void {
+        if (is_string($this->tmpFile) &&
+           file_exists($this->tmpFile)) {
+
             unlink($this->tmpFile);
         }
 
-        if (is_string($this->orgFile) && file_exists($this->orgFile)) {
+        if (is_string($this->orgFile) &&
+            file_exists($this->orgFile)) {
+
             unlink($this->orgFile);
         }
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
-    public static function invalidStreams(): array
-    {
+    public static function invalidStreams(): array {
         return [
             'null'  => [null],
             'true'  => [true],
@@ -81,25 +81,22 @@ final class UploadedFileTest extends TestCase
     }
 
     #[DataProvider('invalidStreams')]
-    public function testRaisesExceptionOnInvalidStreamOrFile(mixed $streamOrFile): void
-    {
+    public function testRaisesExceptionOnInvalidStreamOrFile(mixed $streamOrFile): void {
         $this->expectException(InvalidArgumentException::class);
 
         new UploadedFile($streamOrFile, 0, UPLOAD_ERR_OK);
     }
 
-    public function testValidSize(): void
-    {
+    public function testValidSize(): void {
         $resource = fopen('php://temp', 'wb+');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $uploaded = new UploadedFile($resource, 123, UPLOAD_ERR_OK);
 
-        $this->assertSame(123, $uploaded->getSize());
+        $this->assertSame(123, $uploaded->size);
     }
 
     /** @return non-empty-array<non-empty-string, array{int}> */
-    public static function invalidErrorStatuses(): array
-    {
+    public static function invalidErrorStatuses(): array {
         return [
             'negative' => [-1],
             'too-big'  => [9],
@@ -107,8 +104,7 @@ final class UploadedFileTest extends TestCase
     }
 
     #[DataProvider('invalidErrorStatuses')]
-    public function testRaisesExceptionOnInvalidErrorStatus(int $status): void
-    {
+    public function testRaisesExceptionOnInvalidErrorStatus(int $status): void {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('status');
 
@@ -117,58 +113,51 @@ final class UploadedFileTest extends TestCase
         new UploadedFile($resource, 0, $status);
     }
 
-    public function testValidClientFilename(): void
-    {
+    public function testValidClientFilename(): void {
         $resource = fopen('php://temp', 'wb+');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $file = new UploadedFile($resource, 0, UPLOAD_ERR_OK, 'boo.txt');
-        $this->assertSame('boo.txt', $file->getClientFilename());
+        $this->assertSame('boo.txt', $file->clientFilename);
     }
 
-    public function testValidNullClientFilename(): void
-    {
+    public function testValidNullClientFilename(): void {
         $resource = fopen('php://temp', 'wb+');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $file = new UploadedFile($resource, 0, UPLOAD_ERR_OK, null);
-        $this->assertSame(null, $file->getClientFilename());
+        $this->assertSame(null, $file->clientFilename);
     }
 
-    public function testValidClientMediaType(): void
-    {
+    public function testValidClientMediaType(): void {
         $resource = fopen('php://temp', 'wb+');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $file = new UploadedFile($resource, 0, UPLOAD_ERR_OK, 'foobar.baz', 'mediatype');
-        $this->assertSame('mediatype', $file->getClientMediaType());
+        $this->assertSame('mediatype', $file->clientMediaType);
     }
 
-    public function testGetStreamReturnsOriginalStreamObject(): void
-    {
+    public function testGetStreamReturnsOriginalStreamObject(): void {
         $stream = new Stream('php://temp');
         $upload = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
-        $this->assertSame($stream, $upload->getStream());
+        $this->assertSame($stream, $upload->stream);
     }
 
-    public function testGetStreamReturnsWrappedPhpStream(): void
-    {
+    public function testGetStreamReturnsWrappedPhpStream(): void {
         $stream = fopen('php://temp', 'wb+');
         assert($stream !== false, 'Always true condition for psalm type safety');
         $upload       = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
-        $uploadStream = $upload->getStream()->detach();
+        $uploadStream = $upload->stream->detach();
         $this->assertSame($stream, $uploadStream);
     }
 
-    public function testGetStreamReturnsStreamForFile(): void
-    {
+    public function testGetStreamReturnsStreamForFile(): void {
         $this->tmpFile = $stream = tempnam(sys_get_temp_dir(), 'diac');
         assert($stream !== false, 'Always true condition for psalm type safety');
         $upload       = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
-        $uploadStream = $upload->getStream();
+        $uploadStream = $upload->stream;
         $r            = new ReflectionProperty($uploadStream, 'stream');
         $this->assertSame($stream, $r->getValue($uploadStream));
     }
 
-    public function testMovesFileToDesignatedPath(): void
-    {
+    public function testMovesFileToDesignatedPath(): void {
         $originalContents = 'Foo bar!';
         $stream           = new Stream('php://temp', 'wb+');
         $stream->write($originalContents);
@@ -183,16 +172,14 @@ final class UploadedFileTest extends TestCase
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
-    public static function invalidMovePaths(): array
-    {
+    public static function invalidMovePaths(): array {
         return [
             'empty' => [''],
         ];
     }
 
     #[DataProvider('invalidMovePaths')]
-    public function testMoveRaisesExceptionForInvalidPath(mixed $path): void
-    {
+    public function testMoveRaisesExceptionForInvalidPath(mixed $path): void {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write('Foo bar!');
         $upload = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
@@ -206,8 +193,7 @@ final class UploadedFileTest extends TestCase
         $upload->moveTo($path);
     }
 
-    public function testMoveCannotBeCalledMoreThanOnce(): void
-    {
+    public function testMoveCannotBeCalledMoreThanOnce(): void {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write('Foo bar!');
         $upload = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
@@ -223,8 +209,7 @@ final class UploadedFileTest extends TestCase
         $upload->moveTo($to);
     }
 
-    public function testCannotRetrieveStreamAfterMove(): void
-    {
+    public function testCannotRetrieveStreamAfterMove(): void {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write('Foo bar!');
         $upload = new UploadedFile($stream, 0, UPLOAD_ERR_OK);
@@ -237,12 +222,11 @@ final class UploadedFileTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('moved');
 
-        $upload->getStream();
+        $upload->stream;
     }
 
     /** @return non-empty-array<non-empty-string, array{positive-int}> */
-    public static function nonOkErrorStatus(): array
-    {
+    public static function nonOkErrorStatus(): array {
         return [
             'UPLOAD_ERR_INI_SIZE'   => [UPLOAD_ERR_INI_SIZE],
             'UPLOAD_ERR_FORM_SIZE'  => [UPLOAD_ERR_FORM_SIZE],
@@ -256,16 +240,14 @@ final class UploadedFileTest extends TestCase
 
     #[DataProvider('nonOkErrorStatus')]
     #[Group('60')]
-    public function testConstructorDoesNotRaiseExceptionForInvalidStreamWhenErrorStatusPresent(int $status): void
-    {
+    public function testConstructorDoesNotRaiseExceptionForInvalidStreamWhenErrorStatusPresent(int $status): void {
         $uploadedFile = new UploadedFile('not ok', 0, $status);
-        $this->assertSame($status, $uploadedFile->getError());
+        $this->assertSame($status, $uploadedFile->error);
     }
 
     #[DataProvider('nonOkErrorStatus')]
     #[Group('60')]
-    public function testMoveToRaisesExceptionWhenErrorStatusPresent(int $status): void
-    {
+    public function testMoveToRaisesExceptionWhenErrorStatusPresent(int $status): void {
         $uploadedFile = new UploadedFile('not ok', 0, $status);
 
         $this->expectException(RuntimeException::class);
@@ -276,19 +258,17 @@ final class UploadedFileTest extends TestCase
 
     #[DataProvider('nonOkErrorStatus')]
     #[Group('60')]
-    public function testGetStreamRaisesExceptionWhenErrorStatusPresent(int $status): void
-    {
+    public function testGetStreamRaisesExceptionWhenErrorStatusPresent(int $status): void {
         $uploadedFile = new UploadedFile('not ok', 0, $status);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('upload error');
 
-        $uploadedFile->getStream();
+        $uploadedFile->stream;
     }
 
     #[Group('82')]
-    public function testMoveToCreatesStreamIfOnlyAFilenameWasProvided(): void
-    {
+    public function testMoveToCreatesStreamIfOnlyAFilenameWasProvided(): void {
         $this->orgFile = tempnam(sys_get_temp_dir(), 'ORG');
         assert($this->orgFile !== false, 'Always true condition for psalm type safety');
         $this->tmpFile = tempnam(sys_get_temp_dir(), 'DIA');
@@ -306,8 +286,7 @@ final class UploadedFileTest extends TestCase
     }
 
     /** @return iterable<int, array{int, non-empty-string}> */
-    public static function errorConstantsAndMessages(): iterable
-    {
+    public static function errorConstantsAndMessages(): iterable {
         foreach (UploadedFile::ERROR_MESSAGES as $constant => $message) {
             if ($constant === UPLOAD_ERR_OK) {
                 continue;
@@ -324,7 +303,7 @@ final class UploadedFileTest extends TestCase
         $uploadedFile = new UploadedFile(__FILE__, 100, $constant);
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage($message);
-        $uploadedFile->getStream();
+        $uploadedFile->stream;
     }
 
     #[DataProvider('errorConstantsAndMessages')]
@@ -338,8 +317,7 @@ final class UploadedFileTest extends TestCase
         $uploadedFile->moveTo('/tmp/foo');
     }
 
-    public function testMoveToInCLIShouldRemoveOriginalFile(): void
-    {
+    public function testMoveToInCLIShouldRemoveOriginalFile(): void {
         $this->orgFile = tempnam(sys_get_temp_dir(), 'ORG');
         assert($this->orgFile !== false, 'Always true condition for psalm type safety');
         file_put_contents($this->orgFile, 'Hello');

@@ -9,7 +9,7 @@ use Rodas\Diactoros\Response\TextResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 final class TextResponseTest extends TestCase
 {

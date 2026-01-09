@@ -10,8 +10,8 @@ use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\MessageInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 
 use function count;
 use function trim;

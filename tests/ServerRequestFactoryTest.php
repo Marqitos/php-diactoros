@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\ServerRequestInterface;
 use UnexpectedValueException;
 
 use function str_replace;
@@ -131,11 +131,11 @@ final class ServerRequestFactoryTest extends TestCase
 
         $request = ServerRequestFactory::fromGlobals($server, $query, $body, $cookies, $files);
         $this->assertInstanceOf(ServerRequest::class, $request);
-        $this->assertSame($cookies, $request->getCookieParams());
-        $this->assertSame($query, $request->getQueryParams());
+        $this->assertSame($cookies, $request->cookieParams);
+        $this->assertSame($query, $request->queryParams);
         $this->assertSame($body, $request->getParsedBody());
-        $this->assertEquals($expectedFiles, $request->getUploadedFiles());
-        $this->assertEmpty($request->getAttributes());
+        $this->assertEquals($expectedFiles, $request->uploadedFiles);
+        $this->assertEmpty($request->attributes);
         $this->assertSame('1.1', $request->getProtocolVersion());
     }
 
@@ -168,11 +168,11 @@ final class ServerRequestFactoryTest extends TestCase
         ];
 
         $request = ServerRequestFactory::fromGlobals([], [], [], [], []);
-        $this->assertEmpty($request->getServerParams(), 'Server params are not empty');
-        $this->assertEmpty($request->getQueryParams(), 'Query params are not empty');
+        $this->assertEmpty($request->serverParams, 'Server params are not empty');
+        $this->assertEmpty($request->queryParams, 'Query params are not empty');
         $this->assertEmpty($request->getParsedBody(), 'Parsed body is not empty');
-        $this->assertEmpty($request->getCookieParams(), 'Cookies are not empty');
-        $this->assertEmpty($request->getUploadedFiles(), 'Uploaded files are not empty');
+        $this->assertEmpty($request->cookieParams, 'Cookies are not empty');
+        $this->assertEmpty($request->uploadedFiles, 'Uploaded files are not empty');
         $defaults = new ServerRequest();
         $this->assertSame($defaults->getProtocolVersion(), $request->getProtocolVersion());
     }
@@ -185,7 +185,7 @@ final class ServerRequestFactoryTest extends TestCase
         $_SERVER['HTTP_COOKIE'] = 'foo_bar=baz';
 
         $request = ServerRequestFactory::fromGlobals();
-        $this->assertSame(['foo_bar' => 'baz'], $request->getCookieParams());
+        $this->assertSame(['foo_bar' => 'baz'], $request->cookieParams);
     }
 
     public function testCreateFromGlobalsShouldPreserveKeysWhenCreatedWithAZeroValue(): void
@@ -216,7 +216,7 @@ final class ServerRequestFactoryTest extends TestCase
         ];
 
         $request = ServerRequestFactory::fromGlobals();
-        $this->assertSame(['foo_bar' => 'bat'], $request->getCookieParams());
+        $this->assertSame(['foo_bar' => 'bat'], $request->cookieParams);
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string, array<non-empty-string, non-empty-string>}> */
@@ -260,7 +260,7 @@ final class ServerRequestFactoryTest extends TestCase
         $_SERVER['HTTP_COOKIE'] = $cookieHeader;
 
         $request = ServerRequestFactory::fromGlobals();
-        $this->assertSame($expectedCookies, $request->getCookieParams());
+        $this->assertSame($expectedCookies, $request->cookieParams);
     }
 
     public function testNormalizeServerUsesMixedCaseAuthorizationHeaderFromApacheWhenPresent(): void
@@ -346,9 +346,9 @@ final class ServerRequestFactoryTest extends TestCase
         $request = $factory->createServerRequest('GET', '/');
         $body    = $request->getBody();
 
-        $this->assertTrue($body->isWritable());
-        $this->assertTrue($body->isSeekable());
-        $this->assertSame(0, $body->getSize());
+        $this->assertTrue($body->isWritable);
+        $this->assertTrue($body->isSeekable);
+        $this->assertSame(0, $body->size);
     }
 
     /**
@@ -448,16 +448,14 @@ final class ServerRequestFactoryTest extends TestCase
         $headerName = str_replace('_', '-', $key);
 
         $this->assertSame($expectedHeaderValue, $request->getHeaderLine($headerName));
-        $this->assertSame($expectedServerValue, $request->getServerParams()[$key]);
+        $this->assertSame($expectedServerValue, $request->serverParams[$key]);
     }
 
     public function testReturnsFilteredRequestBasedOnRequestFilterProvided(): void
     {
         $expectedRequest = new ServerRequest();
         $filter          = new class ($expectedRequest) implements FilterServerRequestInterface {
-            public function __construct(private readonly ServerRequestInterface $request)
-            {
-            }
+            public function __construct(private readonly ServerRequestInterface $request) { }
 
             #[Override]
             public function __invoke(ServerRequestInterface $request): ServerRequestInterface
@@ -507,8 +505,8 @@ final class ServerRequestFactoryTest extends TestCase
             new DoNotFilter()
         );
 
-        $uri = $request->getUri();
-        $this->assertSame('example.com', $uri->getHost());
+        $uri = $request->uri;
+        $this->assertSame('example.com', $uri->host);
     }
 
     /**
@@ -541,7 +539,7 @@ final class ServerRequestFactoryTest extends TestCase
             new DoNotFilter()
         );
 
-        $uri = $request->getUri();
-        $this->assertSame('', $uri->getHost());
+        $uri = $request->uri;
+        $this->assertSame('', $uri->host);
     }
 }

@@ -105,13 +105,13 @@ final class StreamTest extends TestCase
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         assert($this->tmpnam !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($this->tmpnam, 'w');
-        $this->assertFalse($stream->isReadable());
+        $this->assertFalse($stream->isReadable);
     }
 
     public function testIsWritableReturnsFalseIfStreamIsNotWritable(): void
     {
         $stream = new Stream('php://memory', 'r');
-        $this->assertFalse($stream->isWritable());
+        $this->assertFalse($stream->isWritable);
     }
 
     public function testToStringRetrievesFullContentsOfStream(): void
@@ -188,7 +188,7 @@ final class StreamTest extends TestCase
     public function testSizeReportsNullWhenNoResourcePresent(): void
     {
         $this->stream->detach();
-        $this->assertNull($this->stream->getSize());
+        $this->assertNull($this->stream->size);
     }
 
     public function testTellReportsCurrentPositionInResource(): void
@@ -273,7 +273,7 @@ final class StreamTest extends TestCase
         $resource = fopen($this->tmpnam, 'wb+');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
-        $this->assertTrue($stream->isSeekable());
+        $this->assertTrue($stream->isSeekable);
     }
 
     public function testIsSeekableReturnsFalseForDetachedStreams(): void
@@ -285,7 +285,7 @@ final class StreamTest extends TestCase
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
         $stream->detach();
-        $this->assertFalse($stream->isSeekable());
+        $this->assertFalse($stream->isSeekable);
     }
 
     public function testSeekAdvancesToGivenOffsetOfStream(): void
@@ -338,13 +338,13 @@ final class StreamTest extends TestCase
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
         $stream->detach();
-        $this->assertFalse($stream->isWritable());
+        $this->assertFalse($stream->isWritable);
     }
 
     public function testIsWritableReturnsTrueForWritableMemoryStream(): void
     {
         $stream = new Stream("php://temp", "r+b");
-        $this->assertTrue($stream->isWritable());
+        $this->assertTrue($stream->isWritable);
     }
 
     /** @return non-empty-list<array{non-empty-string, bool, bool}> */
@@ -401,7 +401,7 @@ final class StreamTest extends TestCase
         $resource = fopen($this->tmpnam, $mode);
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
-        $this->assertSame($flag, $stream->isWritable());
+        $this->assertSame($flag, $stream->isWritable);
     }
 
     /** @return non-empty-list<array{non-empty-string, bool, bool}> */
@@ -449,7 +449,7 @@ final class StreamTest extends TestCase
         $resource = fopen($this->tmpnam, $mode);
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
-        $this->assertSame($flag, $stream->isReadable());
+        $this->assertSame($flag, $stream->isReadable);
     }
 
     public function testWriteRaisesExceptionWhenStreamIsDetached(): void
@@ -488,7 +488,7 @@ final class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->detach();
 
-        $this->assertFalse($stream->isReadable());
+        $this->assertFalse($stream->isReadable);
     }
 
     public function testReadRaisesExceptionWhenStreamIsDetached(): void
@@ -703,7 +703,7 @@ final class StreamTest extends TestCase
         $expected = fstat($resource);
         assert($expected !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
-        $this->assertSame($expected['size'], $stream->getSize());
+        $this->assertSame($expected['size'], $stream->size);
     }
 
     #[Group('67')]
@@ -779,6 +779,6 @@ final class StreamTest extends TestCase
         $resource = fopen('php://input', 'r');
         assert($resource !== false, 'Always true condition for psalm type safety');
         $stream = new Stream($resource);
-        $this->assertNull($stream->getSize());
+        $this->assertNull($stream->size);
     }
 }

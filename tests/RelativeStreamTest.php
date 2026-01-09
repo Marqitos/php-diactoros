@@ -53,7 +53,7 @@ final class RelativeStreamTest extends TestCase
         $decorated = $this->createMock(Stream::class);
         $decorated->expects(self::once())->method('getSize')->willReturn(250);
         $stream = new RelativeStream($decorated, 100);
-        $ret    = $stream->getSize();
+        $ret    = $stream->size;
         $this->assertSame(150, $ret);
     }
 
@@ -71,16 +71,15 @@ final class RelativeStreamTest extends TestCase
         $decorated = $this->createMock(Stream::class);
         $decorated->expects(self::once())->method('isSeekable')->willReturn(true);
         $stream = new RelativeStream($decorated, 100);
-        $ret    = $stream->isSeekable();
+        $ret    = $stream->isSeekable;
         $this->assertSame(true, $ret);
     }
 
-    public function testIsWritable(): void
-    {
+    public function testIsWritable(): void {
         $decorated = $this->createMock(Stream::class);
         $decorated->expects(self::once())->method('isWritable')->willReturn(true);
         $stream = new RelativeStream($decorated, 100);
-        $ret    = $stream->isWritable();
+        $ret    = $stream->isWritable;
         $this->assertSame(true, $ret);
     }
 
@@ -89,7 +88,7 @@ final class RelativeStreamTest extends TestCase
         $decorated = $this->createMock(Stream::class);
         $decorated->expects(self::once())->method('isReadable')->willReturn(false);
         $stream = new RelativeStream($decorated, 100);
-        $ret    = $stream->isReadable();
+        $ret    = $stream->isReadable;
         $this->assertSame(false, $ret);
     }
 

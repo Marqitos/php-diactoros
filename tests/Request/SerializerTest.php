@@ -12,8 +12,8 @@ use Rodas\Diactoros\Stream;
 use Rodas\Diactoros\Uri;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 use UnexpectedValueException;
 
 use function json_encode;
@@ -102,7 +102,7 @@ final class SerializerTest extends TestCase
         $this->assertSame('GET', $request->getMethod());
         $this->assertSame($requestTarget, $request->getRequestTarget());
 
-        $uri = $request->getUri();
+        $uri = $request->uri;
         foreach ($expectations as $method => $expect) {
             $this->assertSame($expect, $uri->{$method}());
         }
@@ -193,7 +193,7 @@ final class SerializerTest extends TestCase
 
         $this->assertSame($requestTarget, $request->getRequestTarget());
 
-        $uri = $request->getUri();
+        $uri = $request->uri;
         foreach ($expectations as $method => $expect) {
             $this->assertSame($expect, $uri->{$method}());
         }
@@ -206,9 +206,9 @@ final class SerializerTest extends TestCase
         $this->assertSame('CONNECT', $request->getMethod());
         $this->assertSame('www.example.com:80', $request->getRequestTarget());
 
-        $uri = $request->getUri();
-        $this->assertNotSame('www.example.com', $uri->getHost());
-        $this->assertNotSame(80, $uri->getPort());
+        $uri = $request->uri;
+        $this->assertNotSame('www.example.com', $uri->host);
+        $this->assertNotSame(80, $uri->port);
     }
 
     public function testCanDeserializeRequestWithAsteriskForm(): void
@@ -218,8 +218,8 @@ final class SerializerTest extends TestCase
         $this->assertSame('OPTIONS', $request->getMethod());
         $this->assertSame('*', $request->getRequestTarget());
 
-        $uri = $request->getUri();
-        $this->assertNotSame('www.example.com', $uri->getHost());
+        $uri = $request->uri;
+        $this->assertNotSame('www.example.com', $uri->host);
 
         $this->assertTrue($request->hasHeader('Host'));
         $this->assertSame('www.example.com', $request->getHeaderLine('Host'));

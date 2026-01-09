@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Rodas\Test\Diactoros;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\UploadedFileInterface;
+use Rodas\Psr\Http\Message\UploadedFileInterface;
 use Rodas\Diactoros\ServerRequestFactory;
 
 final class NormalizeUploadedFilesTest extends TestCase {
-    public function testCreatesUploadedFileFromFlatFileSpecification(): void
-    {
+    public function testCreatesUploadedFileFromFlatFileSpecification(): void {
         $files = [
             'avatar' => [
                 'tmp_name' => 'phpUxcOty',
@@ -25,11 +24,10 @@ final class NormalizeUploadedFilesTest extends TestCase {
 
         $this->assertCount(1, $normalised);
         $this->assertInstanceOf(UploadedFileInterface::class, $normalised['avatar']);
-        $this->assertEquals('my-avatar.png', $normalised['avatar']->getClientFilename());
+        $this->assertEquals('my-avatar.png', $normalised['avatar']->clientFilename);
     }
 
-    public function testTraversesNestedFileSpecificationToExtractUploadedFile(): void
-    {
+    public function testTraversesNestedFileSpecificationToExtractUploadedFile(): void {
         $files = [
             'my-form' => [
                 'details' => [
@@ -47,11 +45,10 @@ final class NormalizeUploadedFilesTest extends TestCase {
         $normalised = ServerRequestFactory::normalizeUploadedFiles($files);
 
         $this->assertCount(1, $normalised);
-        $this->assertEquals('my-avatar.png', $normalised['my-form']['details']['avatar']->getClientFilename());
+        $this->assertEquals('my-avatar.png', $normalised['my-form']['details']['avatar']->clientFilename);
     }
 
-    public function testTraversesNestedFileSpecificationContainingNumericIndicesToExtractUploadedFiles(): void
-    {
+    public function testTraversesNestedFileSpecificationContainingNumericIndicesToExtractUploadedFiles(): void {
         $files = [
             'my-form' => [
                 'details' => [
@@ -89,17 +86,16 @@ final class NormalizeUploadedFilesTest extends TestCase {
         $normalised = ServerRequestFactory::normalizeUploadedFiles($files);
 
         $this->assertCount(3, $normalised['my-form']['details']['avatars']);
-        $this->assertEquals('file1.txt', $normalised['my-form']['details']['avatars'][0]->getClientFilename());
-        $this->assertEquals('file2.txt', $normalised['my-form']['details']['avatars'][1]->getClientFilename());
-        $this->assertEquals('file3.txt', $normalised['my-form']['details']['avatars'][2]->getClientFilename());
+        $this->assertEquals('file1.txt', $normalised['my-form']['details']['avatars'][0]->clientFilename);
+        $this->assertEquals('file2.txt', $normalised['my-form']['details']['avatars'][1]->clientFilename);
+        $this->assertEquals('file3.txt', $normalised['my-form']['details']['avatars'][2]->clientFilename);
     }
 
     /**
      * This case covers upfront numeric index which moves the tmp_name/size/etc
      * fields further up the array tree
      */
-    public function testTraversesDenormalizedNestedTreeOfIndicesToExtractUploadedFiles(): void
-    {
+    public function testTraversesDenormalizedNestedTreeOfIndicesToExtractUploadedFiles(): void {
         $files = [
             'slide-shows' => [
                 'tmp_name' => [
@@ -149,7 +145,7 @@ final class NormalizeUploadedFilesTest extends TestCase {
         $normalised = ServerRequestFactory::normalizeUploadedFiles($files);
 
         $this->assertCount(2, $normalised['slide-shows'][0]['slides']);
-        $this->assertEquals('foo.txt', $normalised['slide-shows'][0]['slides'][0]->getClientFilename());
-        $this->assertEquals('bar.txt', $normalised['slide-shows'][0]['slides'][1]->getClientFilename());
+        $this->assertEquals('foo.txt', $normalised['slide-shows'][0]['slides'][0]->clientFilename);
+        $this->assertEquals('bar.txt', $normalised['slide-shows'][0]['slides'][1]->clientFilename);
     }
 }

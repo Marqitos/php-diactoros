@@ -10,19 +10,17 @@ use Rodas\Diactoros\Response\Serializer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\ResponseInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
 use UnexpectedValueException;
 
-final class SerializerTest extends TestCase
-{
-    public function testSerializesBasicResponse(): void
-    {
+final class SerializerTest extends TestCase {
+    public function testSerializesBasicResponse(): void {
         $response = (new Response())
             ->withStatus(200)
             ->withAddedHeader('Content-Type', 'text/plain')
             ->withAddedHeader('X-Foo-Bar', 'Baz');
-        $response->getBody()->write('Content!');
+        $response->body->write('Content!');
 
         $message = Serializer::toString($response);
         $this->assertSame(
@@ -31,8 +29,7 @@ final class SerializerTest extends TestCase
         );
     }
 
-    public function testSerializesResponseWithoutBodyCorrectly(): void
-    {
+    public function testSerializesResponseWithoutBodyCorrectly(): void {
         $response = (new Response())
             ->withStatus(200)
             ->withAddedHeader('Content-Type', 'text/plain');
@@ -44,8 +41,7 @@ final class SerializerTest extends TestCase
         );
     }
 
-    public function testSerializesMultipleHeadersCorrectly(): void
-    {
+    public function testSerializesMultipleHeadersCorrectly(): void {
         $response = (new Response())
             ->withStatus(204)
             ->withAddedHeader('X-Foo-Bar', 'Baz')
@@ -56,28 +52,27 @@ final class SerializerTest extends TestCase
         $this->assertStringContainsString("X-Foo-Bar: Bat", $message);
     }
 
-    public function testOmitsReasonPhraseFromStatusLineIfEmpty(): void
-    {
+    public function testOmitsReasonPhraseFromStatusLineIfEmpty(): void {
         $response = (new Response())
             ->withStatus(299)
             ->withAddedHeader('X-Foo-Bar', 'Baz');
-        $response->getBody()->write('Content!');
+        $response->body->write('Content!');
 
         $message = Serializer::toString($response);
         $this->assertStringContainsString("HTTP/1.1 299\r\n", $message);
     }
 
-    public function testCanDeserializeBasicResponse(): void
-    {
+    public function testCanDeserializeBasicResponse(): void {
         $text     = "HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar: Baz\r\n\r\nContent!";
         $response = Serializer::fromString($text);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertInstanceOf(Response::class, $response);
 
-        $this->assertSame('1.0', $response->getProtocolVersion());
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('A-OK', $response->getReasonPhrase());
+        $this->assertSame('1.0', $response->protocolVersion);
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(200, $response->status);
+        $this->assertSame('A-OK', $response->reasonPhrase);
 
         $this->assertTrue($response->hasHeader('Content-Type'));
         $this->assertSame('text/plain', $response->getHeaderLine('Content-Type'));
@@ -85,11 +80,10 @@ final class SerializerTest extends TestCase
         $this->assertTrue($response->hasHeader('X-Foo-Bar'));
         $this->assertSame('Baz', $response->getHeaderLine('X-Foo-Bar'));
 
-        $this->assertSame('Content!', (string) $response->getBody());
+        $this->assertSame('Content!', (string) $response->body);
     }
 
-    public function testCanDeserializeResponseWithMultipleHeadersOfSameName(): void
-    {
+    public function testCanDeserializeResponseWithMultipleHeadersOfSameName(): void {
         $text     = "HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar: Baz\r\nX-Foo-Bar: Bat\r\n\r\nContent!";
         $response = Serializer::fromString($text);
 
@@ -102,8 +96,7 @@ final class SerializerTest extends TestCase
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
-    public static function headersWithContinuationLines(): array
-    {
+    public static function headersWithContinuationLines(): array {
         return [
             'space' => ["HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar: Baz;\r\n Bat\r\n\r\nContent!"],
             'tab'   => ["HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar: Baz;\r\n\tBat\r\n\r\nContent!"],
@@ -114,8 +107,7 @@ final class SerializerTest extends TestCase
      * @param non-empty-string $text
      */
     #[DataProvider('headersWithContinuationLines')]
-    public function testCanDeserializeResponseWithHeaderContinuations(string $text): void
-    {
+    public function testCanDeserializeResponseWithHeaderContinuations(string $text): void {
         $response = Serializer::fromString($text);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -126,8 +118,7 @@ final class SerializerTest extends TestCase
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
-    public static function headersWithWhitespace(): array
-    {
+    public static function headersWithWhitespace(): array {
         return [
             'no'       => ["HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar:Baz\r\n\r\nContent!"],
             'leading'  => ["HTTP/1.0 200 A-OK\r\nContent-Type: text/plain\r\nX-Foo-Bar: Baz\r\n\r\nContent!"],
@@ -138,8 +129,7 @@ final class SerializerTest extends TestCase
     }
 
     #[DataProvider('headersWithWhitespace')]
-    public function testDeserializationRemovesWhitespaceAroundValues(string $text): void
-    {
+    public function testDeserializationRemovesWhitespaceAroundValues(string $text): void {
         $response = Serializer::fromString($text);
 
         $this->assertInstanceOf(Response::class, $response);
@@ -147,8 +137,7 @@ final class SerializerTest extends TestCase
         $this->assertSame('Baz', $response->getHeaderLine('X-Foo-Bar'));
     }
 
-    public function testCanDeserializeResponseWithoutBody(): void
-    {
+    public function testCanDeserializeResponseWithoutBody(): void {
         $text     = "HTTP/1.0 204\r\nX-Foo-Bar: Baz";
         $response = Serializer::fromString($text);
 
@@ -158,38 +147,35 @@ final class SerializerTest extends TestCase
         $this->assertTrue($response->hasHeader('X-Foo-Bar'));
         $this->assertSame('Baz', $response->getHeaderLine('X-Foo-Bar'));
 
-        $body = $response->getBody()->getContents();
+        $body = $response->body->getContents();
         $this->assertEmpty($body);
     }
 
-    public function testCanDeserializeResponseWithoutHeadersOrBody(): void
-    {
+    public function testCanDeserializeResponseWithoutHeadersOrBody(): void {
         $text     = "HTTP/1.0 204";
         $response = Serializer::fromString($text);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertInstanceOf(Response::class, $response);
 
-        $this->assertEmpty($response->getHeaders());
-        $body = $response->getBody()->getContents();
+        $this->assertEmpty($response->headers);
+        $body = $response->body->getContents();
         $this->assertEmpty($body);
     }
 
-    public function testCanDeserializeResponseWithoutHeadersButContainingBody(): void
-    {
+    public function testCanDeserializeResponseWithoutHeadersButContainingBody(): void {
         $text     = "HTTP/1.0 204\r\n\r\nContent!";
         $response = Serializer::fromString($text);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertInstanceOf(Response::class, $response);
 
-        $this->assertEmpty($response->getHeaders());
-        $body = $response->getBody()->getContents();
+        $this->assertEmpty($response->headers);
+        $body = $response->body->getContents();
         $this->assertSame('Content!', $body);
     }
 
-    public function testDeserializationRaisesExceptionForInvalidStatusLine(): void
-    {
+    public function testDeserializationRaisesExceptionForInvalidStatusLine(): void {
         $text = "This is an invalid status line\r\nX-Foo-Bar: Baz\r\n\r\nContent!";
 
         $this->expectException(UnexpectedValueException::class);
@@ -237,7 +223,7 @@ final class SerializerTest extends TestCase
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->method('isReadable')
+            ->variable('isReadable')
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
@@ -250,11 +236,11 @@ final class SerializerTest extends TestCase
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->method('isReadable')
+            ->variable('isReadable')
             ->willReturn(true);
         $stream
             ->expects($this->once())
-            ->method('isSeekable')
+            ->variable('isSeekable')
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
