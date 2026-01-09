@@ -1,0 +1,74 @@
+{
+    "name": "rodas/diactoros",
+    "description": "HTTP Message implementations",
+    "type": "library",
+    "keywords": [
+        "rodas",
+        "http",
+        "psr"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcos Porto Mariño",
+            "email": "php@marcospor.to"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/Marqitos/php-diactoros",
+        "issues": "https://github.com/Marqitos/php-diactoros/issues"
+    },
+    "homepage": "https://marcospor.to/repositories",
+    "minimum-stability": "stable",
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true,
+        "platform": {
+            "php": "8.4.4"
+        }
+    },
+    "extra": {
+        "laminas": {
+            "config-provider": "Rodas\\Diactoros\\ConfigProvider",
+            "module": "Rodas\\Diactoros"
+        }
+    },
+    "require": {
+        "php": "~8.4.0 || ~8.5.0",
+        "rodas/psr-scaffold": "^2.0"
+    },
+    "require-dev": {
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-gd": "*",
+        "ext-libxml": "*",
+        "phpunit/phpunit": "^12.5.4",
+        "psalm/plugin-phpunit": "^0.19.5",
+        "vimeo/psalm": "^6.13"
+    },
+    "provide": {
+        "rodas/psr-http-message-implementation": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rodas\\Diactoros\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rodas\\Test\\Diactoros\\": "test/"
+        }
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@test"
+        ],
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+    }
+}

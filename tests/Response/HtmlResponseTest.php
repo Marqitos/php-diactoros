@@ -1,0 +1,89 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Rodas\Test\Diactoros\Response;
+
+use InvalidArgumentException;
+use Rodas\Diactoros\Response\HtmlResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Rodas\Psr\Http\Message\StreamInterface;
+
+final class HtmlResponseTest extends TestCase
+{
+    public function testConstructorAcceptsHtmlString(): void
+    {
+        $body = '<html>Uh oh not found</html>';
+
+        $response = new HtmlResponse($body);
+        $this->assertSame($body, (string) $response->body);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testConstructorAllowsPassingStatus(): void
+    {
+        $body   = '<html>Uh oh not found</html>';
+        $status = 404;
+
+        $response = new HtmlResponse($body, $status);
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame($body, (string) $response->body);
+    }
+
+    public function testConstructorAllowsPassingHeaders(): void
+    {
+        $body    = '<html>Uh oh not found</html>';
+        $status  = 404;
+        $headers = [
+            'x-custom' => ['foo-bar'],
+        ];
+
+        $response = new HtmlResponse($body, $status, $headers);
+        $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
+        $this->assertSame('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame($body, (string) $response->body);
+    }
+
+    public function testAllowsStreamsForResponseBody(): void
+    {
+        $body     = $this->createStub(StreamInterface::class);
+        $response = new HtmlResponse($body);
+        $this->assertSame($body, $response->body);
+    }
+
+    /** @return array<non-empty-string, array{mixed}> */
+    public static function invalidHtmlContent(): array
+    {
+        return [
+            'null'       => [null],
+            'true'       => [true],
+            'false'      => [false],
+            'zero'       => [0],
+            'int'        => [1],
+            'zero-float' => [0.0],
+            'float'      => [1.1],
+            'array'      => [['php://temp']],
+            'object'     => [(object) ['php://temp']],
+        ];
+    }
+
+    #[DataProvider('invalidHtmlContent')]
+    public function testRaisesExceptionForNonStringNonStreamBodyContent(mixed $body): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        /** @psalm-suppress MixedArgument */
+        new HtmlResponse($body);
+    }
+
+    public function testConstructorRewindsBodyStream(): void
+    {
+        $html     = '<p>test data</p>';
+        $response = new HtmlResponse($html);
+
+        $actual = $response->body->getContents();
+        $this->assertSame($html, $actual);
+    }
+}

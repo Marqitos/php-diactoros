@@ -1,0 +1,85 @@
+<?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\Response\TextResponse.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
+
+declare(strict_types=1);
+
+namespace Rodas\Diactoros\Response;
+
+use InvalidArgumentException;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
+use Rodas\Psr\Http\Message\StreamInterface;
+
+use function get_debug_type;
+use function is_string;
+use function sprintf;
+
+/**
+ * Plain text response.
+ *
+ * Allows creating a response by passing a string to the constructor;
+ * by default, sets a status code of 200 and sets the Content-Type header to
+ * text/plain.
+ */
+class TextResponse extends Response {
+    use InjectContentTypeTrait;
+
+    /**
+     * Create a plain text response.
+     *
+     * Produces a text response with a Content-Type of text/plain and a default
+     * status of 200.
+     *
+     * @param string|StreamInterface $text String or stream for the message body.
+     * @param int $status Integer status code for the response; 200 by default.
+     * @param array<non-empty-string, string|string[]> $headers Array of headers to use at initialization.
+     * @throws InvalidArgumentException If $text is neither a string or stream.
+     */
+    public function __construct($text, int $status = 200, array $headers = []) {
+        parent::__construct(
+            $this->createBody($text),
+            $status,
+            $this->injectContentType('text/plain; charset=utf-8', $headers)
+        );
+    }
+
+    /**
+     * Create the message body.
+     *
+     * @param string|StreamInterface $text
+     * @throws InvalidArgumentException If $text is neither a string or stream.
+     */
+    private function createBody($text): StreamInterface {
+        if ($text instanceof StreamInterface) {
+            return $text;
+        }
+
+        /** @psalm-suppress DocblockTypeContradiction */
+        if (! is_string($text)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid content (%s) provided to %s',
+                get_debug_type($text),
+                self::class
+            ));
+        }
+
+        $body = new Stream('php://temp', 'wb+');
+        $body->write($text);
+        $body->rewind();
+        return $body;
+    }
+}

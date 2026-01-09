@@ -1,0 +1,55 @@
+name: CI (Continuous Integration)
+
+# Runs unit tests.
+
+on: [push]
+
+# Cancels all previous workflow runs for the same branch that have not yet completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: "Unit Tests (PHPUnit)"
+#    needs: ["code-coverage"]
+    runs-on: "${{ matrix.operating-system }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "8.4" # Minimum supported PHP version
+          - "8.5"
+        operating-system:
+          - "ubuntu-latest"
+        dependency-versions:
+          - "locked"
+          - "highest"
+
+    steps:
+      - name: "Configure Git (for Windows)"
+        if: ${{ matrix.operating-system == 'windows-latest' }}
+        run: |
+          git config --system core.autocrlf false
+          git config --system core.eol lf
+
+      - name: "Checkout repository"
+        uses: "actions/checkout@v5"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php-version }}"
+          extensions: "sodium"
+          coverage: "none"
+          ini-values: "memory_limit=-1"
+
+      - name: "Install dependencies (Composer)"
+        uses: "ramsey/composer-install@v3"
+        with:
+          dependency-versions: "${{ matrix.dependency-versions }}"
+
+      - name: "Run unit tests (PHPUnit)"
+        run: "composer test"

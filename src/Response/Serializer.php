@@ -1,0 +1,109 @@
+<?php
+/**
+ * This file is part of the Rodas\Diactoros
+ *
+ * Based on Laminas\Diactoros\Response\Serializer.php
+ * laminas/laminas-diactoros (Laminas\Diactoros) from Laminas Project a Series of LF Projects, LLC.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Rodas\Diactoros
+ * @copyright 2026 Marcos Porto <php@marcospor.to>
+ * @license https://opensource.org/license/mit The MIT License
+ * @link https://marcospor.to/repositories/diactoros
+ */
+
+declare(strict_types=1);
+
+namespace Rodas\Diactoros\Response;
+
+use InvalidArgumentException;
+use Rodas\Diactoros\AbstractSerializer;
+use Rodas\Diactoros\Exception;
+use Rodas\Diactoros\Response;
+use Rodas\Diactoros\Stream;
+use Rodas\Psr\Http\Message\ResponseInterface;
+use Rodas\Psr\Http\Message\StreamInterface;
+
+use function preg_match;
+use function sprintf;
+
+final class Serializer extends AbstractSerializer {
+    /**
+     * Deserialize a response string to a response instance.
+     *
+     * @throws Exception\SerializationException When errors occur parsing the message.
+     */
+    public static function fromString(string $message): Response {
+        $stream = new Stream('php://temp', 'wb+');
+        $stream->write($message);
+        return static::fromStream($stream);
+    }
+
+    /**
+     * Parse a response from a stream.
+     *
+     * @throws InvalidArgumentException When the stream is not readable.
+     * @throws Exception\SerializationException When errors occur parsing the message.
+     */
+    public static function fromStream(StreamInterface $stream): Response {
+        if (! $stream->isReadable ||
+            ! $stream->isSeekable) {
+            throw new InvalidArgumentException('Message stream must be both readable and seekable');
+        }
+
+        $stream->rewind();
+
+        [$version, $status, $reasonPhrase] = self::getStatusLine($stream);
+        [$headers, $body]                  = self::splitStream($stream);
+
+        return (new Response($body, $status, $headers))
+            ->withProtocolVersion($version)
+            ->withStatus((int) $status, $reasonPhrase);
+    }
+
+    /**
+     * Create a string representation of a response.
+     */
+    public static function toString(ResponseInterface $response): string {
+        $reasonPhrase = $response->getReasonPhrase();
+        $headers      = self::serializeHeaders($response->getHeaders());
+        $body         = (string) $response->getBody();
+        $format       = 'HTTP/%s %d%s%s%s';
+
+        if (! empty($headers)) {
+            $headers = "\r\n" . $headers;
+        }
+
+        $headers .= "\r\n\r\n";
+
+        return sprintf(
+            $format,
+            $response->getProtocolVersion(),
+            $response->getStatusCode(),
+            $reasonPhrase ? ' ' . $reasonPhrase : '',
+            $headers,
+            $body
+        );
+    }
+
+    /**
+     * Retrieve the status line for the message.
+     *
+     * @return array Array with three elements: 0 => version, 1 => status, 2 => reason
+     * @throws Exception\SerializationException If line is malformed.
+     */
+    private static function getStatusLine(StreamInterface $stream): array {
+        $line = self::getLine($stream);
+
+        if (! preg_match(
+                '#^HTTP/(?P<version>[1-9]\d*\.\d) (?P<status>[1-5]\d{2})(\s+(?P<reason>.+))?$#',
+                $line,
+                $matches)) {
+            throw Exception\SerializationException::forInvalidStatusLine();
+        }
+
+        return [$matches['version'], (int) $matches['status'], $matches['reason'] ?? ''];
+    }
+}

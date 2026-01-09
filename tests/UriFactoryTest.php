@@ -1,0 +1,267 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Rodas\Test\Diactoros;
+
+use Rodas\Diactoros\Uri;
+use Rodas\Diactoros\UriFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+use function array_shift;
+use function sprintf;
+use function str_contains;
+use function strtolower;
+
+final class UriFactoryTest extends TestCase {
+    public function testCreateFromSapiUsesIISUnencodedUrlValueIfPresentAndUrlWasRewritten(): void {
+        $server = [
+            'IIS_WasUrlRewritten' => '1',
+            'UNENCODED_URL'       => '/foo/bar',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame($server['UNENCODED_URL'], $uri->path);
+    }
+
+    public function testCreateFromSapiStripsSchemeHostAndPortInformationWhenPresent(): void {
+        $server = [
+            'REQUEST_URI' => 'http://example.com:8000/foo/bar',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame('/foo/bar', $uri->path);
+    }
+
+    public function testCreateFromSapiUsesOrigPathInfoIfPresent(): void
+    {
+        $server = [
+            'ORIG_PATH_INFO' => '/foo/bar',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame('/foo/bar', $uri->path);
+    }
+
+    public function testCreateFromSapiFallsBackToRoot(): void
+    {
+        $server = [];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame('/', $uri->path);
+    }
+
+    public function testMarshalHostAndPortUsesHostHeaderWhenPresent(): void
+    {
+        $headers = ['Host' => ['example.com']];
+
+        $uri = UriFactory::createFromSapi([], $headers);
+
+        $this->assertSame('example.com', $uri->host);
+        $this->assertNull($uri->port);
+    }
+
+    public function testMarshalHostAndPortWillDetectPortInHostHeaderWhenPresent(): void
+    {
+        $headers = ['Host' => ['example.com:8000']];
+
+        $uri = UriFactory::createFromSapi([], $headers);
+
+        $this->assertSame('example.com', $uri->host);
+        $this->assertSame(8000, $uri->port);
+    }
+
+    public function testMarshalHostAndPortReturnsEmptyValuesIfNoHostHeaderAndNoServerName(): void
+    {
+        $uri = UriFactory::createFromSapi([], []);
+
+        $this->assertSame('', $uri->host);
+        $this->assertNull($uri->port);
+    }
+
+    public function testMarshalHostAndPortReturnsServerNameForHostWhenPresent(): void
+    {
+        $server  = [
+            'SERVER_NAME' => 'example.com',
+        ];
+        $headers = [];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertSame('example.com', $uri->host);
+        $this->assertNull($uri->port);
+    }
+
+    public function testMarshalHostAndPortReturnsServerPortForPortWhenPresentWithServerName(): void
+    {
+        $server = [
+            'SERVER_NAME' => 'example.com',
+            'SERVER_PORT' => 8000,
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame('example.com', $uri->host);
+        $this->assertSame(8000, $uri->port);
+    }
+
+    public function testMarshalHostAndPortReturnsServerNameForHostIfServerAddrPresentButHostIsNotIpv6Address(): void
+    {
+        $server = [
+            'SERVER_ADDR' => '127.0.0.1',
+            'SERVER_NAME' => 'example.com',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame('example.com', $uri->host);
+    }
+
+    public function testMarshalHostAndPortReturnsServerAddrForHostIfPresentAndHostIsIpv6Address(): void
+    {
+        $server = [
+            'SERVER_ADDR' => 'FE80::0202:B3FF:FE1E:8329',
+            'SERVER_NAME' => '[FE80::0202:B3FF:FE1E:8329]',
+            'SERVER_PORT' => 8000,
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->host);
+        $this->assertSame(8000, $uri->port);
+    }
+
+    public function testMarshalHostAndPortWillDetectPortInIpv6StyleHost(): void
+    {
+        $server = [
+            'SERVER_ADDR' => 'FE80::0202:B3FF:FE1E:8329',
+            'SERVER_NAME' => '[FE80::0202:B3FF:FE1E:8329:80]',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, []);
+
+        $this->assertSame(strtolower('[FE80::0202:B3FF:FE1E:8329]'), $uri->host);
+        $this->assertNull($uri->port);
+    }
+
+    /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
+    public static function httpsParamProvider(): array
+    {
+        return [
+            'lowercase' => ['https'],
+            'uppercase' => ['HTTPS'],
+        ];
+    }
+
+    /**
+     * @param non-empty-string $param
+     */
+    #[DataProvider('httpsParamProvider')]
+    public function testMarshalUriDetectsHttpsSchemeFromServerValue(string $param): void
+    {
+        $server  = [
+            $param => 'on',
+        ];
+        $headers = ['Host' => ['example.com']];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertSame('https', $uri->scheme);
+    }
+
+    /** @return iterable<string, array{non-empty-string, 'off'|'OFF'}> */
+    public static function httpsDisableParamProvider(): iterable
+    {
+        foreach (self::httpsParamProvider() as $key => $data) {
+            $param = array_shift($data);
+            foreach (['lowercase-off', 'uppercase-off'] as $type) {
+                $key   = sprintf('%s-%s', $key, $type);
+                $value = str_contains($type, 'lowercase') ? 'off' : 'OFF';
+                yield $key => [$param, $value];
+            }
+        }
+    }
+
+    /**
+     * @param non-empty-string $param
+     * @param 'off'|'OFF' $value
+     */
+    #[DataProvider('httpsDisableParamProvider')]
+    public function testMarshalUriUsesHttpSchemeIfHttpsServerValueEqualsOff(string $param, string $value): void
+    {
+        $server  = [
+            $param => $value,
+        ];
+        $headers = ['Host' => ['example.com']];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertSame('http', $uri->scheme);
+    }
+
+    public function testMarshalUriStripsQueryStringFromRequestUri(): void
+    {
+        $server  = [
+            'REQUEST_URI' => '/foo/bar?foo=bar',
+        ];
+        $headers = [
+            'Host' => ['example.com'],
+        ];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertSame('/foo/bar', $uri->path);
+    }
+
+    public function testMarshalUriInjectsQueryStringFromServer(): void
+    {
+        $server  = [
+            'REQUEST_URI'  => '/foo/bar?foo=bar',
+            'QUERY_STRING' => 'bar=baz',
+        ];
+        $headers = [
+            'Host' => ['example.com'],
+        ];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertSame('bar=baz', $uri->query);
+    }
+
+    public function testMarshalUriInjectsFragmentFromServer(): void
+    {
+        $server  = [
+            'REQUEST_URI' => '/foo/bar#foo',
+        ];
+        $headers = [
+            'Host' => ['example.com'],
+        ];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertSame('foo', $uri->fragment);
+    }
+
+    public function testMarshalRequestUriPrefersRequestUriServerParamWhenXOriginalUrlButNoXRewriteUrlPresent(): void
+    {
+        $headers = [
+            'X-Original-URL' => '/hijack-attempt',
+        ];
+        $server  = [
+            'REQUEST_URI' => 'https://example.com/requested/path',
+        ];
+
+        $uri = UriFactory::createFromSapi($server, $headers);
+        $this->assertSame('/requested/path', $uri->path);
+    }
+}
