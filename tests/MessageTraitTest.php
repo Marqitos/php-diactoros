@@ -79,7 +79,7 @@ final class MessageTraitTest extends TestCase
     {
         $stream  = $this->createMock(StreamInterface::class);
         $message = new Request(null, null, $stream);
-        $this->assertSame($stream, $message->getBody());
+        $this->assertSame($stream, $message->body);
     }
 
     public function testBodyMutatorReturnsCloneWithChanges(): void
@@ -87,7 +87,7 @@ final class MessageTraitTest extends TestCase
         $stream  = $this->createMock(StreamInterface::class);
         $message = $this->message->withBody($stream);
         $this->assertNotSame($this->message, $message);
-        $this->assertSame($stream, $message->getBody());
+        $this->assertSame($stream, $message->body);
     }
 
     public function testGetHeaderReturnsHeaderValueAsArray(): void

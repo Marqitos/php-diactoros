@@ -344,7 +344,7 @@ final class ServerRequestFactoryTest extends TestCase
     {
         $factory = new ServerRequestFactory();
         $request = $factory->createServerRequest('GET', '/');
-        $body    = $request->getBody();
+        $body    = $request->body;
 
         $this->assertTrue($body->isWritable);
         $this->assertTrue($body->isSeekable);

@@ -17,7 +17,7 @@ final class HtmlResponseTest extends TestCase
         $body = '<html>Uh oh not found</html>';
 
         $response = new HtmlResponse($body);
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
         $this->assertSame(200, $response->getStatusCode());
     }
 
@@ -28,7 +28,7 @@ final class HtmlResponseTest extends TestCase
 
         $response = new HtmlResponse($body, $status);
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testConstructorAllowsPassingHeaders(): void
@@ -43,14 +43,14 @@ final class HtmlResponseTest extends TestCase
         $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
         $this->assertSame('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testAllowsStreamsForResponseBody(): void
     {
         $body     = $this->createStub(StreamInterface::class);
         $response = new HtmlResponse($body);
-        $this->assertSame($body, $response->getBody());
+        $this->assertSame($body, $response->body);
     }
 
     /** @return array<non-empty-string, array{mixed}> */
@@ -83,7 +83,7 @@ final class HtmlResponseTest extends TestCase
         $html     = '<p>test data</p>';
         $response = new HtmlResponse($html);
 
-        $actual = $response->getBody()->getContents();
+        $actual = $response->body->getContents();
         $this->assertSame($html, $actual);
     }
 }

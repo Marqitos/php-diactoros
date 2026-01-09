@@ -105,9 +105,9 @@ final class ServerRequestTest extends TestCase
     public static function provideMethods(): array
     {
         return [
-            'post' => ['POST', 'POST'],
-            'get'  => ['GET', 'GET'],
-            'null' => [null, 'GET'],
+            'post' => ['POST'   , 'POST'    , RequestMethod::POST],
+            'get'  => ['GET'    , 'GET'     , RequestMethod::GET],
+            'null' => [null     , 'GET'     , RequestMethod::GET]
         ];
     }
 
@@ -116,7 +116,7 @@ final class ServerRequestTest extends TestCase
      * @param non-empty-string $methodReturned
      */
     #[DataProvider('provideMethods')]
-    public function testUsesProvidedConstructorArguments(?string $parameterMethod, string $methodReturned): void
+    public function testUsesProvidedConstructorArguments(?string $parameterMethod, string $methodReturned, RequestMethod $requestMethodReturned): void
     {
         $server = [
             'foo' => 'bar',
@@ -159,14 +159,15 @@ final class ServerRequestTest extends TestCase
         $this->assertSame($files, $request->uploadedFiles);
 
         $this->assertSame($uri, $request->uri);
-        $this->assertSame($methodReturned, $request->getMethod());
-        $this->assertSame($headers, $request->getHeaders());
+        $this->assertSame($methodReturned, $request->method);
+        $this->assertSame($requestMethodReturned, $request->requestMethod);
+        $this->assertSame($headers, $request->headers);
         $this->assertSame($cookies, $request->cookieParams);
         $this->assertSame($queryParams, $request->queryParams);
         $this->assertSame($parsedBody, $request->getParsedBody());
-        $this->assertSame($protocol, $request->getProtocolVersion());
+        $this->assertSame($protocol, $request->protocolVersion);
 
-        $body   = $request->getBody();
+        $body   = $request->body;
         $r      = new ReflectionProperty($body, 'stream');
         $stream = $r->getValue($body);
         $this->assertSame('php://memory', $stream);

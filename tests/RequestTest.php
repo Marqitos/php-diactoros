@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\RequestInterface;
 use Rodas\Psr\Http\Message\UriInterface;
+use Rodas\Psr\Http\Message\RequestMethod;
 
 final class RequestTest extends TestCase
 {
@@ -27,14 +28,16 @@ final class RequestTest extends TestCase
 
     public function testMethodIsGetByDefault(): void
     {
-        $this->assertSame('GET', $this->request->getMethod());
+        $this->assertSame('GET', $this->request->method);
+        $this->assertSame(RequestMethod::GET, $this->request->requestMethod);
     }
 
     public function testMethodMutatorReturnsCloneWithChangedMethod(): void
     {
         $request = $this->request->withMethod('POST');
         $this->assertNotSame($this->request, $request);
-        $this->assertEquals('POST', $request->getMethod());
+        $this->assertEquals('POST', $request->method);
+        $this->assertEquals(RequestMethod::POST, $request->requestMethod);
     }
 
     /** @return non-empty-list<array{mixed}> */
@@ -92,8 +95,9 @@ final class RequestTest extends TestCase
         );
 
         $this->assertSame($uri, $request->uri);
-        $this->assertSame('POST', $request->getMethod());
-        $this->assertSame($body, $request->getBody());
+        $this->assertSame('POST', $request->method);
+        $this->assertSame(RequestMethod::POST, $request->requestMethod);
+        $this->assertSame($body, $request->body);
         $testHeaders = $request->getHeaders();
         foreach ($headers as $key => $value) {
             $this->assertArrayHasKey($key, $testHeaders);
@@ -104,9 +108,9 @@ final class RequestTest extends TestCase
     public function testDefaultStreamIsWritable(): void
     {
         $request = new Request();
-        $request->getBody()->write("test");
+        $request->body->write("test");
 
-        $this->assertSame("test", (string) $request->getBody());
+        $this->assertSame("test", (string) $request->body);
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
@@ -134,7 +138,7 @@ final class RequestTest extends TestCase
     {
         return [
             /* WebDAV methods */
-            'TRACE'     => ['TRACE'],
+            'TRACE'     => [RequestMethod::TRACE],
             'PROPFIND'  => ['PROPFIND'],
             'PROPPATCH' => ['PROPPATCH'],
             'MKCOL'     => ['MKCOL'],
@@ -152,10 +156,21 @@ final class RequestTest extends TestCase
      */
     #[DataProvider('customRequestMethods')]
     #[Group('29')]
-    public function testAllowsCustomRequestMethodsThatFollowSpec(string $method): void
+    public function testAllowsCustomRequestMethodsThatFollowSpec(RequestMethod|string $method): void
     {
         $request = new Request(null, $method);
-        $this->assertSame($method, $request->getMethod());
+        if ($method instanceof RequestMethod) {
+            $this->assertSame($method->value, $request->method);
+            $this->assertSame($method, $request->requestMethod);
+        } else {
+            $requestMethod = RequestMethod::tryParse($method);
+            $this->assertSame($method, $request->method);
+            if ($requestMethod === null) {
+                $this->assertNull($request->requestMethod);
+            } else {
+            $this->assertSame($requestMethod, $request->requestMethod);
+            }
+        }
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */

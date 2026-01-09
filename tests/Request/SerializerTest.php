@@ -13,6 +13,7 @@ use Rodas\Diactoros\Uri;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\RequestMethod;
 use Rodas\Psr\Http\Message\StreamInterface;
 use UnexpectedValueException;
 
@@ -99,8 +100,9 @@ final class SerializerTest extends TestCase
         $message = $line . "\r\nX-Foo-Bar: Baz\r\n\r\nContent";
         $request = Serializer::fromString($message);
 
-        $this->assertSame('GET', $request->getMethod());
-        $this->assertSame($requestTarget, $request->getRequestTarget());
+        $this->assertSame('GET', $request->method);
+        $this->assertSame(RequestMethod::GET, $request->requestMethod);
+        $this->assertSame($requestTarget, $request->requestTarget);
 
         $uri = $request->uri;
         foreach ($expectations as $method => $expect) {
@@ -398,6 +400,6 @@ final class SerializerTest extends TestCase
 
         $stream = Serializer::fromStream($stream);
 
-        $this->assertInstanceOf(RelativeStream::class, $stream->getBody());
+        $this->assertInstanceOf(RelativeStream::class, $stream->body);
     }
 }

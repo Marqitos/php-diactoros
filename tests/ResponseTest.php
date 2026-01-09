@@ -208,7 +208,7 @@ final class ResponseTest extends TestCase
         ];
 
         $response = new Response($body, $status, $headers);
-        $this->assertSame($body, $response->getBody());
+        $this->assertSame($body, $response->body);
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame($headers, $response->getHeaders());
     }

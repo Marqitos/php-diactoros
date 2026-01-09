@@ -18,7 +18,7 @@ final class TextResponseTest extends TestCase
         $body = 'Uh oh not found';
 
         $response = new TextResponse($body);
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
         $this->assertSame(200, $response->getStatusCode());
     }
 
@@ -29,7 +29,7 @@ final class TextResponseTest extends TestCase
 
         $response = new TextResponse($body, $status);
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testConstructorAllowsPassingHeaders(): void
@@ -44,14 +44,14 @@ final class TextResponseTest extends TestCase
         $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
         $this->assertSame('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testAllowsStreamsForResponseBody(): void
     {
         $body     = $this->createMock(StreamInterface::class);
         $response = new TextResponse($body);
-        $this->assertSame($body, $response->getBody());
+        $this->assertSame($body, $response->body);
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
@@ -85,7 +85,7 @@ final class TextResponseTest extends TestCase
         $text     = 'test data';
         $response = new TextResponse($text);
 
-        $actual = $response->getBody()->getContents();
+        $actual = $response->body->getContents();
         $this->assertSame($text, $actual);
     }
 }

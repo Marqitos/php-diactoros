@@ -20,7 +20,7 @@ final class XmlResponseTest extends TestCase
         $body = 'Super valid XML';
 
         $response = new XmlResponse($body);
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
         $this->assertSame(200, $response->getStatusCode());
     }
 
@@ -31,7 +31,7 @@ final class XmlResponseTest extends TestCase
 
         $response = new XmlResponse($body, $status);
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testConstructorAllowsPassingHeaders(): void
@@ -46,14 +46,14 @@ final class XmlResponseTest extends TestCase
         $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
         $this->assertSame('application/xml; charset=utf-8', $response->getHeaderLine('content-type'));
         $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($body, (string) $response->body);
     }
 
     public function testAllowsStreamsForResponseBody(): void
     {
         $body     = $this->createMock(StreamInterface::class);
         $response = new XmlResponse($body);
-        $this->assertSame($body, $response->getBody());
+        $this->assertSame($body, $response->body);
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
@@ -87,7 +87,7 @@ final class XmlResponseTest extends TestCase
         $body     = '<?xml version="1.0"?>' . PHP_EOL . '<something>Valid XML</something>';
         $response = new XmlResponse($body);
 
-        $actual = $response->getBody()->getContents();
+        $actual = $response->body->getContents();
         $this->assertSame($body, $actual);
     }
 }

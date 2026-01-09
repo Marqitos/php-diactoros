@@ -14,7 +14,7 @@ final class EmptyResponseTest extends TestCase
     {
         $response = new EmptyResponse(201);
         $this->assertInstanceOf(Response::class, $response);
-        $this->assertSame('', (string) $response->getBody());
+        $this->assertSame('', (string) $response->body);
         $this->assertSame(201, $response->getStatusCode());
     }
 
@@ -22,7 +22,7 @@ final class EmptyResponseTest extends TestCase
     {
         $response = EmptyResponse::withHeaders(['x-empty' => ['true']]);
         $this->assertInstanceOf(Response::class, $response);
-        $this->assertSame('', (string) $response->getBody());
+        $this->assertSame('', (string) $response->body);
         $this->assertSame(204, $response->getStatusCode());
         $this->assertSame('true', $response->getHeaderLine('x-empty'));
     }
