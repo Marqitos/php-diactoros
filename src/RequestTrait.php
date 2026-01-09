@@ -58,7 +58,7 @@ trait RequestTrait {
      *
      * @var RequestMethod|null Returns the request method.
      */
-    public private(set) ?RequestMethod $requestMethod = null {
+    public private(set) ?RequestMethod $requestMethod = RequestMethod::GET {
         get => $this->requestMethod;
         set => $this->requestMethod = $value;
     }
@@ -306,6 +306,7 @@ trait RequestTrait {
             ));
         }
         $this->method = $method;
+        $this->requestMethod = RequestMethod::tryParse($method);
     }
 
     /**

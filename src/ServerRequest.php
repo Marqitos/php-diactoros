@@ -217,7 +217,9 @@ class ServerRequest implements ServerRequestInterface {
     #[Override]
     public function withAttribute(string $name, $value): ServerRequest {
         $new                    = clone $this;
-        $new->attributes[$name] = $value;
+        $attributes = $new->attributes;
+        $attributes[$name] = $value;
+        $new->attributes = $attributes;
         return $new;
     }
 
@@ -227,7 +229,9 @@ class ServerRequest implements ServerRequestInterface {
     #[Override]
     public function withoutAttribute(string $name): ServerRequest {
         $new = clone $this;
-        unset($new->attributes[$name]);
+        $attributes = $new->attributes;
+        unset($attributes[$name]);
+        $new->attributes = $attributes;
         return $new;
     }
 
