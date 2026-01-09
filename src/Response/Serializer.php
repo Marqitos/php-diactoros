@@ -48,7 +48,8 @@ final class Serializer extends AbstractSerializer {
      * @throws Exception\SerializationException When errors occur parsing the message.
      */
     public static function fromStream(StreamInterface $stream): Response {
-        if (! $stream->isReadable() || ! $stream->isSeekable()) {
+        if (! $stream->isReadable ||
+            ! $stream->isSeekable) {
             throw new InvalidArgumentException('Message stream must be both readable and seekable');
         }
 

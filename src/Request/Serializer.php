@@ -58,7 +58,8 @@ final class Serializer extends AbstractSerializer {
      * @throws Exception\SerializationException If an invalid request line is detected.
      */
     public static function fromStream(StreamInterface $stream): Request {
-        if (! $stream->isReadable() || ! $stream->isSeekable()) {
+        if (! $stream->isReadable ||
+            ! $stream->isSeekable) {
             throw new InvalidArgumentException('Message stream must be both readable and seekable');
         }
 

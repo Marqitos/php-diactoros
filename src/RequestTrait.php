@@ -86,9 +86,9 @@ trait RequestTrait {
                 return $this->requestTarget;
             }
 
-            $target = $this->uri->getPath();
-            if ($this->uri->getQuery()) {
-                $target .= '?' . $this->uri->getQuery();
+            $target = $this->uri->path;
+            if ($this->uri->query) {
+                $target .= '?' . $this->uri->query;
             }
 
             if (empty($target)) {
@@ -98,6 +98,11 @@ trait RequestTrait {
             return $target;
         }
         set => $this->requestTarget = $value;
+    }
+
+    public private(set) StreamInterface $stream {
+        get => $this->stream;
+        set => $this->stream = $value;
     }
 
     /**
@@ -142,7 +147,7 @@ trait RequestTrait {
 
         // per PSR-7: attempt to set the Host header from a provided URI if no
         // Host header is provided
-        if (! $this->hasHeader('Host') && $this->uri->getHost()) {
+        if (! $this->hasHeader('Host') && $this->uri->host) {
             $this->headerNames['host'] = 'Host';
             $this->headers['Host']     = [$this->getHostFromUri()];
         }
@@ -260,13 +265,13 @@ trait RequestTrait {
             return $new;
         }
 
-        if (! $uri->getHost()) {
+        if (! $uri->host) {
             return $new;
         }
 
-        $host = $uri->getHost();
-        if ($uri->getPort() !== null) {
-            $host .= ':' . $uri->getPort();
+        $host = $uri->host;
+        if ($uri->port !== null) {
+            $host .= ':' . $uri->port;
         }
 
         $new->headerNames['host'] = 'Host';
@@ -307,8 +312,8 @@ trait RequestTrait {
      * Retrieve the host from the URI instance
      */
     private function getHostFromUri(): string {
-        $host  = $this->uri->getHost();
-        $host .= $this->uri->getPort() !== null ? ':' . $this->uri->getPort() : '';
+        $host  = $this->uri->host;
+        $host .= $this->uri->port !== null ? ':' . $this->uri->port : '';
         return $host;
     }
 }

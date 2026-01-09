@@ -63,6 +63,75 @@ class Stream implements StreamInterface, Stringable {
     protected $stream;
 
     /**
+     * {@inheritdoc}
+     */
+    public bool $isSeekable {
+        get {
+            if (! $this->resource) {
+                return false;
+            }
+
+            $meta = stream_get_meta_data($this->resource);
+            return $meta['seekable'];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public bool $isReadable {
+        get {
+            if (! $this->resource) {
+                return false;
+            }
+
+            $meta = stream_get_meta_data($this->resource);
+            $mode = $meta['mode'];
+
+            return str_contains($mode, 'r') ||
+                   str_contains($mode, '+');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public bool $isWritable {
+        get {
+            if (! $this->resource) {
+                return false;
+            }
+
+            $meta = stream_get_meta_data($this->resource);
+            $mode = $meta['mode'];
+
+            return str_contains($mode, 'x')
+                || str_contains($mode, 'w')
+                || str_contains($mode, 'c')
+                || str_contains($mode, 'a')
+                || str_contains($mode, '+');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public ?int $size {
+        get {
+            if (null === $this->resource) {
+                return null;
+            }
+
+            $stats = fstat($this->resource);
+            if ($stats !== false) {
+                return $stats['size'];
+            }
+
+            return null;
+        }
+    }
+
+    /**
      * @param string|object|resource $stream
      * @param string $mode Mode with which to open stream
      * @throws InvalidArgumentException
@@ -122,27 +191,8 @@ class Stream implements StreamInterface, Stringable {
      * @throws InvalidArgumentException For stream identifier that cannot be cast to a resource.
      * @throws InvalidArgumentException For non-resource stream.
      */
-    public function attach($resource, string $mode = 'r'): void
-    {
+    public function attach($resource, string $mode = 'r'): void {
         $this->setStream($resource, $mode);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public ?int $size {
-        get {
-            if (null === $this->resource) {
-                return null;
-            }
-
-            $stats = fstat($this->resource);
-            if ($stats !== false) {
-                return $stats['size'];
-            }
-
-            return null;
-        }
     }
 
     /**
@@ -177,20 +227,6 @@ class Stream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    public bool $isSeekable {
-        get {
-            if (! $this->resource) {
-                return false;
-            }
-
-            $meta = stream_get_meta_data($this->resource);
-            return $meta['seekable'];
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function seek(int $offset, int $whence = SEEK_SET): void {
         if (! $this->resource) {
@@ -218,33 +254,13 @@ class Stream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    public bool isWritable {
-        get {
-            if (! $this->resource) {
-                return false;
-            }
-
-            $meta = stream_get_meta_data($this->resource);
-            $mode = $meta['mode'];
-
-            return str_contains($mode, 'x')
-                || str_contains($mode, 'w')
-                || str_contains($mode, 'c')
-                || str_contains($mode, 'a')
-                || str_contains($mode, '+');
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function write($string): int {
         if (! $this->resource) {
             throw Exception\UnwritableStreamException::dueToMissingResource();
         }
 
-        if (! $this->isWritable()) {
+        if (! $this->isWritable) {
             throw Exception\UnwritableStreamException::dueToConfiguration();
         }
 
@@ -255,22 +271,6 @@ class Stream implements StreamInterface, Stringable {
         }
 
         return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public bool $isReadable: bool {
-        get {
-            if (! $this->resource) {
-                return false;
-            }
-
-            $meta = stream_get_meta_data($this->resource);
-            $mode = $meta['mode'];
-
-            return str_contains($mode, 'r') || str_contains($mode, '+');
-        }
     }
 
     /**

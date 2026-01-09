@@ -44,7 +44,7 @@ use function strtolower;
 use function substr;
 
 /**
- * Implementation of Psr\Http\UriInterface.
+ * Implementation of Rodas\Psr\Http\UriInterface.
  *
  * Provides a value object representing a URI for HTTP requests.
  *
@@ -194,7 +194,7 @@ class Uri implements UriInterface, Stringable {
         /** @psalm-suppress ImpureMethodCall, InaccessibleProperty */
         $this->uriString = static::createUriString(
             $this->scheme,
-            $this->getAuthority(),
+            $this->authority,
             $this->path, // Absolute URIs should use a "/" for an empty path
             $this->query,
             $this->fragment

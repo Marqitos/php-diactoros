@@ -89,7 +89,7 @@ trait MessageTrait {
     {
         $this->validateProtocolVersion($version);
         $new           = clone $this;
-        $new->protocol = $version;
+        $new->protocolVersion = $version;
         return $new;
     }
 
@@ -254,7 +254,7 @@ trait MessageTrait {
             throw new InvalidArgumentException(
                 'Stream must be a string stream resource identifier, '
                 . 'an actual stream resource, '
-                . 'or a Psr\Http\Message\StreamInterface implementation'
+                . 'or a Rodas\Psr\Http\Message\StreamInterface implementation'
             );
         }
 
@@ -351,7 +351,7 @@ trait MessageTrait {
            ! $this->hasHeader($name)) {
 
             if (strtolower($name) === 'host' &&
-                $this->uri->getHost()) {
+                $this->uri->host) {
                 return [$this->getHostFromUri()];
             }
 

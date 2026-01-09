@@ -73,7 +73,7 @@ class ServerRequest implements ServerRequestInterface {
         get {
             $headers = $this->headers;
             if (! $this->hasHeader('host') &&
-                $this->uri->getHost()) {
+                $this->uri->host) {
                 $headers['Host'] = [$this->getHostFromUri()];
             }
 
@@ -135,10 +135,10 @@ class ServerRequest implements ServerRequestInterface {
         }
 
         $this->initialize($uri, $method, $body, $headers);
-        $this->cookieParams  = $cookieParams;
-        $this->uploadedFiles = $uploadedFiles;
-        $this->serverParams  = $serverParams;
-        $this->protocol      = $protocol;
+        $this->cookieParams     = $cookieParams;
+        $this->uploadedFiles    = $uploadedFiles;
+        $this->serverParams     = $serverParams;
+        $this->protocolVersion  = $protocol;
     }
 
     /**

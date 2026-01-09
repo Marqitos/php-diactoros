@@ -67,15 +67,15 @@ final class RelativeStream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    #[Override]
-    public function getSize(): ?int {
-        $size = $this->decoratedStream->getSize();
-        if ($size === null) {
-            return null;
+    public ?int $size {
+        get {
+            $size = $this->decoratedStream->getSize();
+            if ($size === null) {
+                return null;
+            }
+            return $size - $this->offset;
         }
-        return $size - $this->offset;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -95,9 +95,8 @@ final class RelativeStream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    #[Override]
-    public function isSeekable(): bool {
-        return $this->decoratedStream->isSeekable();
+    public bool $isSeekable {
+        get => $this->decoratedStream->isSeekable;
     }
 
     /**
@@ -123,9 +122,8 @@ final class RelativeStream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    #[Override]
-    public function isWritable(): bool {
-        return $this->decoratedStream->isWritable();
+    public bool $isWritable {
+        get => $this->decoratedStream->isWritable;
     }
 
     /**
@@ -142,9 +140,8 @@ final class RelativeStream implements StreamInterface, Stringable {
     /**
      * {@inheritdoc}
      */
-    #[Override]
-    public function isReadable(): bool {
-        return $this->decoratedStream->isReadable();
+    public bool $isReadable {
+        get => $this->decoratedStream->isReadable;
     }
 
     /**

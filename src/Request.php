@@ -57,7 +57,7 @@ class Request implements RequestInterface {
         get {
             $headers = $this->headers;
             if (! $this->hasHeader('host') &&
-                $this->uri->getHost()) {
+                $this->uri->host) {
                 $headers['Host'] = [$this->getHostFromUri()];
             }
 

@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros;
 
+use Rodas\Diactoros\Exception\DeserializationException;
 use Rodas\Psr\Http\Message\StreamInterface;
 
 use function array_pop;
@@ -46,7 +47,7 @@ abstract class AbstractSerializer {
      * Retrieves a line from the stream; a line is defined as a sequence of
      * characters ending in a CRLF sequence.
      *
-     * @throws Exception\DeserializationException If the sequence contains a CR
+     * @throws DeserializationException If the sequence contains a CR
      *     or LF in isolation, or ends in a CR.
      */
     protected static function getLine(StreamInterface $stream): string {
@@ -62,12 +63,12 @@ abstract class AbstractSerializer {
 
             // CR NOT followed by LF
             if ($crFound && $char !== self::LF) {
-                throw Exception\DeserializationException::forUnexpectedCarriageReturn();
+                throw DeserializationException::forUnexpectedCarriageReturn();
             }
 
             // LF in isolation
             if (! $crFound && $char === self::LF) {
-                throw Exception\DeserializationException::forUnexpectedLineFeed();
+                throw DeserializationException::forUnexpectedLineFeed();
             }
 
             // CR found; do not append
@@ -82,7 +83,7 @@ abstract class AbstractSerializer {
 
         // CR found at end of stream
         if ($crFound) {
-            throw Exception\DeserializationException::forUnexpectedEndOfHeaders();
+            throw DeserializationException::forUnexpectedEndOfHeaders();
         }
 
         return $line;
@@ -96,7 +97,7 @@ abstract class AbstractSerializer {
      * - The first is an array of headers
      * - The second is a StreamInterface containing the body content
      *
-     * @throws Exception\DeserializationException For invalid headers.
+     * @throws DeserializationException For invalid headers.
      */
     protected static function splitStream(StreamInterface $stream): array {
         $headers       = [];
@@ -113,11 +114,11 @@ abstract class AbstractSerializer {
             }
 
             if ($currentHeader === false) {
-                throw Exception\DeserializationException::forInvalidHeader();
+                throw DeserializationException::forInvalidHeader();
             }
 
             if (! preg_match('#^[ \t]#', $line)) {
-                throw Exception\DeserializationException::forInvalidHeaderContinuation();
+                throw DeserializationException::forInvalidHeaderContinuation();
             }
 
             // Append continuation to last header value found

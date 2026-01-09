@@ -142,6 +142,7 @@ class UploadedFile implements UploadedFileInterface {
         $this->size = $size;
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
+        $this->error = $errorStatus;
         if ($errorStatus === UPLOAD_ERR_OK) {
             if (is_string($streamOrFile)) {
                 $this->file = $streamOrFile;
@@ -151,7 +152,8 @@ class UploadedFile implements UploadedFileInterface {
             }
 
             if ($this->file === null &&
-               ! isset($this->stream)) {
+                ! isset($this->stream)) {
+
                 if (! $streamOrFile instanceof StreamInterface) {
                     throw new InvalidArgumentException('Invalid stream or file provided for UploadedFile');
                 }
@@ -165,7 +167,6 @@ class UploadedFile implements UploadedFileInterface {
                 'Invalid error status for UploadedFile; must be an UPLOAD_ERR_* constant'
             );
         }
-        $this->error = $errorStatus;
     }
 
     /**
