@@ -77,14 +77,13 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
             ! is_string($remoteAddress) || // Should we trigger a warning here?
             ! $this->isFromTrustedProxy($remoteAddress)) { // Do nothing
 
-            //return $request;
+            return $request;
         }
 
         // Update the URI based on the trusted headers
         $uri = $originalUri = $request->uri;
         foreach ($this->trustedHeaders as $headerName) {
             $header = $request->getHeaderLine($headerName);
-            fwrite(STDERR, $headerName . ': ' . $header . PHP_EOL);
             if ('' === $header ||
                 str_contains($header, ',')) {
                 // Reject empty headers and/or headers with multiple values
