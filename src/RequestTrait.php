@@ -100,11 +100,6 @@ trait RequestTrait {
         set => $this->requestTarget = $value;
     }
 
-    public private(set) StreamInterface $stream {
-        get => $this->stream;
-        set => $this->stream = $value;
-    }
-
     /**
      * Gets the URI instance.
      *
@@ -131,7 +126,7 @@ trait RequestTrait {
      * @throws InvalidArgumentException For any invalid value.
      */
     private function initialize(
-        $uri = null,
+        UriInterface|string|null $uri = null,
         RequestMethod|string|null $method = null,
         $body = 'php://memory',
         array $headers = []
@@ -140,16 +135,20 @@ trait RequestTrait {
             $this->setMethod($method);
         }
 
-        $this->uri    = $this->createUri($uri);
-        $this->stream = $this->getStream($body, 'wb+');
+        $this->uri  = $this->createUri($uri);
+        $this->body = $this->getStream($body, 'wb+');
 
         $this->setHeaders($headers);
 
         // per PSR-7: attempt to set the Host header from a provided URI if no
         // Host header is provided
-        if (! $this->hasHeader('Host') && $this->uri->host) {
-            $this->headerNames['host'] = 'Host';
-            $this->headers['Host']     = [$this->getHostFromUri()];
+        if (! $this->hasHeader('Host') &&
+            $this->uri->host) {
+
+            $this->headerNames['host']  = 'Host';
+            $headers                    = $this->headers;
+            $headers['Host']            = [$this->getHostFromUri()];
+            $this->headers              = $headers;
         }
     }
 
@@ -167,7 +166,7 @@ trait RequestTrait {
      *
      * @throws InvalidArgumentException
      */
-    private function createUri(null|string|UriInterface $uri): UriInterface {
+    private function createUri(UriInterface|string|null $uri): UriInterface {
         if ($uri instanceof UriInterface) {
             return $uri;
         }
@@ -279,14 +278,15 @@ trait RequestTrait {
         // Remove an existing host header if present, regardless of current
         // de-normalization of the header name.
         // @see https://github.com/zendframework/zend-diactoros/issues/91
-        foreach (array_keys($new->headers) as $header) {
+        $newHeaders = $new->headers;
+        foreach (array_keys($newHeaders) as $header) {
             if (strtolower($header) === 'host') {
-                unset($new->headers[$header]);
+                unset($newHeaders[$header]);
             }
         }
 
-        $new->headers['Host'] = [$host];
-
+        $newHeaders['Host'] = [$host];
+        $new->headers = $newHeaders;
         return $new;
     }
 
@@ -314,7 +314,9 @@ trait RequestTrait {
      */
     private function getHostFromUri(): string {
         $host  = $this->uri->host;
-        $host .= $this->uri->port !== null ? ':' . $this->uri->port : '';
+        $host .= $this->uri->port !== null
+            ? ':' . $this->uri->port
+            : '';
         return $host;
     }
 }

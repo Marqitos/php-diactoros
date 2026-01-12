@@ -25,6 +25,7 @@ use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
 use Rodas\Psr\Http\Message\RequestMethod;
 use Rodas\Psr\Http\Message\ServerRequestFactoryInterface;
 use Rodas\Psr\Http\Message\ServerRequestInterface;
+use Rodas\Psr\Http\Message\UploadedFileInterface;
 
 use function array_filter;
 use function array_key_exists;
@@ -61,7 +62,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * @throws InvalidArgumentException If one or more of the tmp_name,
      *     size, or error keys are missing from $spec.
      */
-    static function createUploadedFile(array $spec): UploadedFile {
+    public static function createUploadedFile(array $spec): UploadedFile {
         if (! isset($spec['tmp_name']) ||
             ! isset($spec['size']) ||
             ! isset($spec['error'])) {
@@ -115,7 +116,9 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
 
         $server  = static::normalizeServer(
             $server ?? $_SERVER,
-            is_callable(self::$apacheRequestHeaders) ? self::$apacheRequestHeaders : null
+            is_callable(self::$apacheRequestHeaders)
+                ? self::$apacheRequestHeaders
+                : null
         );
         $files   = static::normalizeUploadedFiles($files ?? $_FILES);
         $headers = static::marshalHeadersFromSapi($server);
@@ -142,17 +145,17 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * @param array $server Values obtained from the SAPI (generally `$_SERVER`).
      * @return array<non-empty-string, mixed> Header/value pairs
      */
-    static function marshalHeadersFromSapi(array $server): array {
+    public static function marshalHeadersFromSapi(array $server): array {
         $contentHeaderLookup = isset($server['LAMINAS_DIACTOROS_STRICT_CONTENT_HEADER_LOOKUP'])
-            ? static function (string $key): bool {
-                static $contentHeaders = [
-                    'CONTENT_TYPE'   => true,
-                    'CONTENT_LENGTH' => true,
-                    'CONTENT_MD5'    => true,
-                ];
-                return isset($contentHeaders[$key]);
-            }
+            ? static fn(string $key): bool => in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH', 'CONTENT_MD5'])
             : static fn(string $key): bool => str_starts_with($key, 'CONTENT_');
+//                    static $contentHeaders = [
+//                        'CONTENT_TYPE'   => true,
+//                        'CONTENT_LENGTH' => true,
+//                        'CONTENT_MD5'    => true,
+//                    ];
+//                    return isset($contentHeaders[$key]);
+//                }
 
         $headers = [];
         foreach ($server as $key => $value) {
@@ -200,7 +203,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
     /**
      * Retrieve the request method from the SAPI parameters.
      */
-    static function marshalMethodFromSapi(array $server): string {
+    public static function marshalMethodFromSapi(array $server): string {
         return $server['REQUEST_METHOD'] ?? 'GET';
     }
 
@@ -210,7 +213,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * @throws Exception\UnrecognizedProtocolVersionException If the
      *     $server['SERVER_PROTOCOL'] value is malformed.
      */
-    static function marshalProtocolVersionFromSapi(array $server): string {
+    public static function marshalProtocolVersionFromSapi(array $server): string {
         if (! isset($server['SERVER_PROTOCOL'])) {
             return '1.1';
         }
@@ -236,7 +239,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      *     `apache_request_headers` under the Apache mod_php.
      * @return array Either $server verbatim, or with an added HTTP_AUTHORIZATION header.
      */
-    static function normalizeServer(array $server, ?callable $apacheRequestHeaderCallback = null): array {
+    public static function normalizeServer(array $server, ?callable $apacheRequestHeaderCallback = null): array {
         if (null === $apacheRequestHeaderCallback &&
             is_callable('apache_request_headers')) {
 
@@ -245,22 +248,17 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
 
         // If the HTTP_AUTHORIZATION value is already set, or the callback is not
         // callable, we return verbatim
-        if (isset($server['HTTP_AUTHORIZATION']) ||
-            ! is_callable($apacheRequestHeaderCallback)) {
+        if (! isset($server['HTTP_AUTHORIZATION']) &&
+            is_callable($apacheRequestHeaderCallback)) {
 
-            return $server;
+            $apacheRequestHeaders = $apacheRequestHeaderCallback();
+            if (isset($apacheRequestHeaders['Authorization'])) {
+                $server['HTTP_AUTHORIZATION'] = $apacheRequestHeaders['Authorization'];
+            } elseif (isset($apacheRequestHeaders['authorization'])) {
+                $server['HTTP_AUTHORIZATION'] = $apacheRequestHeaders['authorization'];
+            }
         }
 
-        $apacheRequestHeaders = $apacheRequestHeaderCallback();
-        if (isset($apacheRequestHeaders['Authorization'])) {
-            $server['HTTP_AUTHORIZATION'] = $apacheRequestHeaders['Authorization'];
-            return $server;
-        }
-
-        if (isset($apacheRequestHeaders['authorization'])) {
-            $server['HTTP_AUTHORIZATION'] = $apacheRequestHeaders['authorization'];
-            return $server;
-        }
 
         return $server;
     }
@@ -274,7 +272,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * @return UploadedFileInterface[]
      * @throws InvalidArgumentException For unrecognized values.
      */
-    static function normalizeUploadedFiles(array $files): array {
+    public static function normalizeUploadedFiles(array $files): array {
         /**
          * Traverse a nested tree of uploaded file specifications.
          *
@@ -389,7 +387,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface {
      * @param string $cookieHeader A string cookie header value.
      * @return array<non-empty-string, string> key/value cookie pairs.
      */
-    static function parseCookieHeader($cookieHeader): array {
+    public static function parseCookieHeader($cookieHeader): array {
         preg_match_all('(
             (?:^\\n?[ \t]*|;[ ])
             (?P<name>[!#$%&\'*+-.0-9A-Z^_`a-z|~]+)

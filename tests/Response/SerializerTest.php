@@ -9,9 +9,11 @@ use Rodas\Diactoros\Response;
 use Rodas\Diactoros\Response\Serializer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\ResponseInterface;
 use Rodas\Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StatusCode;
 use UnexpectedValueException;
 
 final class SerializerTest extends TestCase {
@@ -70,7 +72,7 @@ final class SerializerTest extends TestCase {
         $this->assertInstanceOf(Response::class, $response);
 
         $this->assertSame('1.0', $response->protocolVersion);
-        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(StatusCode::OK, $response->statusCode);
         $this->assertSame(200, $response->status);
         $this->assertSame('A-OK', $response->reasonPhrase);
 
@@ -223,7 +225,7 @@ final class SerializerTest extends TestCase {
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->variable('isReadable')
+            ->method(PropertyHook::get('isReadable'))
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
@@ -236,11 +238,11 @@ final class SerializerTest extends TestCase {
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->variable('isReadable')
+            ->method(PropertyHook::get('isReadable'))
             ->willReturn(true);
         $stream
             ->expects($this->once())
-            ->variable('isSeekable')
+            ->method(PropertyHook::get('isSeekable'))
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
@@ -253,6 +255,7 @@ final class SerializerTest extends TestCase {
     {
         $response = Response\Serializer::fromString('HTTP/1.0 204');
         // according to interface the int is expected
-        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame(204, $response->status);
+        $this->assertSame(StatusCode::NO_CONTENT, $response->statusCode);
     }
 }

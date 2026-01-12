@@ -47,11 +47,11 @@ final class ArraySerializer {
      */
     public static function toArray(ResponseInterface $response): array {
         return [
-            'status_code'      => $response->getStatusCode(),
-            'reason_phrase'    => $response->getReasonPhrase(),
-            'protocol_version' => $response->getProtocolVersion(),
-            'headers'          => $response->getHeaders(),
-            'body'             => (string) $response->getBody(),
+            'status_code'      => $response->status,
+            'reason_phrase'    => $response->reasonPhrase,
+            'protocol_version' => $response->protocolVersion,
+            'headers'          => $response->headers,
+            'body'             => (string) $response->body,
         ];
     }
 

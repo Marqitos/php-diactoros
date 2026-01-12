@@ -42,7 +42,7 @@ final class RelativeStream implements StreamInterface, Stringable {
      */
     #[Override]
     public function __toString(): string {
-        if ($this->isSeekable()) {
+        if ($this->isSeekable) {
             $this->seek(0);
         }
         return $this->getContents();
@@ -69,7 +69,7 @@ final class RelativeStream implements StreamInterface, Stringable {
      */
     public ?int $size {
         get {
-            $size = $this->decoratedStream->getSize();
+            $size = $this->decoratedStream->size;
             if ($size === null) {
                 return null;
             }

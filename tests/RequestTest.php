@@ -98,7 +98,7 @@ final class RequestTest extends TestCase
         $this->assertSame('POST', $request->method);
         $this->assertSame(RequestMethod::POST, $request->requestMethod);
         $this->assertSame($body, $request->body);
-        $testHeaders = $request->getHeaders();
+        $testHeaders = $request->headers;
         foreach ($headers as $key => $value) {
             $this->assertArrayHasKey($key, $testHeaders);
             $this->assertSame($value, $testHeaders[$key]);
@@ -226,14 +226,14 @@ final class RequestTest extends TestCase
     public function testRequestTargetIsSlashWhenNoUriPresent(): void
     {
         $request = new Request();
-        $this->assertSame('/', $request->getRequestTarget());
+        $this->assertSame('/', $request->requestTarget);
     }
 
     public function testRequestTargetIsSlashWhenUriHasNoPathOrQuery(): void
     {
         $request = (new Request())
             ->withUri(new Uri('http://example.com'));
-        $this->assertSame('/', $request->getRequestTarget());
+        $this->assertSame('/', $request->requestTarget);
     }
 
     /** @return non-empty-array<non-empty-string, array{RequestInterface, non-empty-string}> */
@@ -271,9 +271,8 @@ final class RequestTest extends TestCase
      * @param non-empty-string $expected
      */
     #[DataProvider('requestsWithUri')]
-    public function testReturnsRequestTargetWhenUriIsPresent(RequestInterface $request, string $expected): void
-    {
-        $this->assertSame($expected, $request->getRequestTarget());
+    public function testReturnsRequestTargetWhenUriIsPresent(RequestInterface $request, string $expected): void {
+        $this->assertSame($expected, $request->requestTarget);
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string}> */
@@ -296,7 +295,7 @@ final class RequestTest extends TestCase
     public function testCanProvideARequestTarget(string $requestTarget): void
     {
         $request = (new Request())->withRequestTarget($requestTarget);
-        $this->assertSame($requestTarget, $request->getRequestTarget());
+        $this->assertSame($requestTarget, $request->requestTarget);
     }
 
     public function testRequestTargetCannotContainWhitespace(): void
@@ -312,9 +311,9 @@ final class RequestTest extends TestCase
     public function testRequestTargetDoesNotCacheBetweenInstances(): void
     {
         $request    = (new Request())->withUri(new Uri('https://example.com/foo/bar'));
-        $original   = $request->getRequestTarget();
+        $original   = $request->requestTarget;
         $newRequest = $request->withUri(new Uri('http://mwop.net/bar/baz'));
-        $this->assertNotSame($original, $newRequest->getRequestTarget());
+        $this->assertNotSame($original, $newRequest->requestTarget);
     }
 
     public function testSettingNewUriResetsRequestTarget(): void
@@ -322,14 +321,14 @@ final class RequestTest extends TestCase
         $request    = (new Request())->withUri(new Uri('https://example.com/foo/bar'));
         $newRequest = $request->withUri(new Uri('http://mwop.net/bar/baz'));
 
-        $this->assertNotSame($request->getRequestTarget(), $newRequest->getRequestTarget());
+        $this->assertNotSame($request->requestTarget, $newRequest->requestTarget);
     }
 
     #[Group('39')]
     public function testGetHeadersContainsHostHeaderIfUriWithHostIsPresent(): void
     {
         $request = new Request('http://example.com');
-        $headers = $request->getHeaders();
+        $headers = $request->headers;
         $this->assertArrayHasKey('Host', $headers);
         $this->assertStringContainsString('example.com', $headers['Host'][0]);
     }
@@ -338,7 +337,7 @@ final class RequestTest extends TestCase
     public function testGetHeadersContainsHostHeaderIfUriWithHostIsDeleted(): void
     {
         $request = (new Request('http://example.com'))->withoutHeader('host');
-        $headers = $request->getHeaders();
+        $headers = $request->headers;
         $this->assertArrayHasKey('Host', $headers);
         $this->assertContains('example.com', $headers['Host']);
     }
@@ -347,7 +346,7 @@ final class RequestTest extends TestCase
     public function testGetHeadersContainsNoHostHeaderIfNoUriPresent(): void
     {
         $request = new Request();
-        $headers = $request->getHeaders();
+        $headers = $request->headers;
         $this->assertArrayNotHasKey('Host', $headers);
     }
 
@@ -355,7 +354,7 @@ final class RequestTest extends TestCase
     public function testGetHeadersContainsNoHostHeaderIfUriDoesNotContainHost(): void
     {
         $request = new Request(new Uri());
-        $headers = $request->getHeaders();
+        $headers = $request->headers;
         $this->assertArrayNotHasKey('Host', $headers);
     }
 
@@ -526,7 +525,7 @@ final class RequestTest extends TestCase
         $new  = $request->withUri($uri);
         $host = $new->getHeaderLine('host');
         $this->assertSame('example.org', $host);
-        $headers = $new->getHeaders();
+        $headers = $new->headers;
         $this->assertArrayHasKey('Host', $headers);
         if ($hostKey !== 'Host') {
             $this->assertArrayNotHasKey($hostKey, $headers);

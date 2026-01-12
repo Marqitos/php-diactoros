@@ -146,14 +146,9 @@ class UploadedFile implements UploadedFileInterface {
         if ($errorStatus === UPLOAD_ERR_OK) {
             if (is_string($streamOrFile)) {
                 $this->file = $streamOrFile;
-            }
-            if (is_resource($streamOrFile)) {
+            } elseif (is_resource($streamOrFile)) {
                 $this->stream = new Stream($streamOrFile);
-            }
-
-            if ($this->file === null &&
-                ! isset($this->stream)) {
-
+            } else {
                 if (! $streamOrFile instanceof StreamInterface) {
                     throw new InvalidArgumentException('Invalid stream or file provided for UploadedFile');
                 }
@@ -206,27 +201,25 @@ class UploadedFile implements UploadedFileInterface {
         }
 
         $sapi = PHP_SAPI;
-        switch (true) {
-            case empty($sapi)
-                || str_starts_with($sapi, 'cli')
-                || str_starts_with($sapi, 'phpdbg')
-                || $this->file === null:
-                // Non-SAPI environment, or no filename present
-                $this->writeFile($targetPath);
+        if (empty($sapi)
+            || str_starts_with($sapi, 'cli')
+            || str_starts_with($sapi, 'phpdbg')
+            || $this->file === null) {
+            // Non-SAPI environment, or no filename present
 
-                if (isset($this->stream)) {
-                    $this->stream->close();
-                }
-                if (is_string($this->file) && file_exists($this->file)) {
-                    unlink($this->file);
-                }
-                break;
-            default:
-                // SAPI environment, with file present
-                if (false === move_uploaded_file($this->file, $targetPath)) {
-                    throw Exception\UploadedFileErrorException::forUnmovableFile();
-                }
-                break;
+            $this->writeFile($targetPath);
+
+            if (isset($this->stream)) {
+                $this->stream->close();
+            }
+            if (is_string($this->file) && file_exists($this->file)) {
+                unlink($this->file);
+            }
+        } else {
+            // SAPI environment, with file present
+            if (false === move_uploaded_file($this->file, $targetPath)) {
+                throw Exception\UploadedFileErrorException::forUnmovableFile();
+            }
         }
 
         $this->moved = true;

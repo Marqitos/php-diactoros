@@ -20,14 +20,14 @@ namespace Rodas\Diactoros;
 
 use Override;
 use Rodas\Psr\Http\Message\RequestFactoryInterface;
-use Rodas\Psr\Http\Message\RequestInterface;
+use Rodas\Psr\Http\Message\UriInterface;
 
 class RequestFactory implements RequestFactoryInterface {
     /**
      * {@inheritDoc}
      */
     #[Override]
-    public function createRequest(string $method, $uri): RequestInterface {
+    public function createRequest(string $method, string|UriInterface $uri): Request {
         return new Request($uri, $method);
     }
 }

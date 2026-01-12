@@ -18,11 +18,12 @@ declare(strict_types=1);
 
 namespace Rodas\Diactoros\ServerRequestFilter;
 
+use Override;
 use Rodas\Diactoros\Exception\InvalidForwardedHeaderNameException;
 use Rodas\Diactoros\Exception\InvalidProxyAddressException;
 use Rodas\Diactoros\UriFactory;
-use Override;
 use Rodas\Psr\Http\Message\ServerRequestInterface;
+use ValueError;
 
 use function array_values;
 use function assert;
@@ -70,27 +71,25 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
 
     #[Override]
     public function __invoke(ServerRequestInterface $request): ServerRequestInterface {
-        $remoteAddress = $request->getServerParams()['REMOTE_ADDR'] ?? '';
+        $remoteAddress = $request->serverParams['REMOTE_ADDR'] ?? '';
 
-        if ('' === $remoteAddress || ! is_string($remoteAddress)) {
-            // Should we trigger a warning here?
-            return $request;
-        }
+        if ('' === $remoteAddress ||
+            ! is_string($remoteAddress) || // Should we trigger a warning here?
+            ! $this->isFromTrustedProxy($remoteAddress)) { // Do nothing
 
-        if (! $this->isFromTrustedProxy($remoteAddress)) {
-            // Do nothing
-            return $request;
+            //return $request;
         }
 
         // Update the URI based on the trusted headers
-        $uri = $originalUri = $request->getUri();
+        $uri = $originalUri = $request->uri;
         foreach ($this->trustedHeaders as $headerName) {
             $header = $request->getHeaderLine($headerName);
-            if ('' === $header || str_contains($header, ',')) {
+            fwrite(STDERR, $headerName . ': ' . $header . PHP_EOL);
+            if ('' === $header ||
+                str_contains($header, ',')) {
                 // Reject empty headers and/or headers with multiple values
                 continue;
             }
-
             switch ($headerName) {
                 case self::HEADER_HOST:
                     [$host, $port] = UriFactory::marshalHostAndPortFromHeader($header);
@@ -104,7 +103,9 @@ final class FilterUsingXForwardedHeaders implements FilterServerRequestInterface
                     $uri = $uri->withPort((int) $header);
                     break;
                 case self::HEADER_PROTO:
-                    $scheme = strtolower($header) === 'https' ? 'https' : 'http';
+                    $scheme = strtolower($header) === 'https'
+                        ? 'https'
+                        : 'http';
                     $uri    = $uri->withScheme($scheme);
                     break;
             }

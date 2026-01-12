@@ -48,12 +48,12 @@ final class ArraySerializer {
      */
     public static function toArray(RequestInterface $request): array {
         return [
-            'method'           => $request->getMethod(),
-            'request_target'   => $request->getRequestTarget(),
-            'uri'              => (string) $request->getUri(),
-            'protocol_version' => $request->getProtocolVersion(),
-            'headers'          => $request->getHeaders(),
-            'body'             => (string) $request->getBody(),
+            'method'           => $request->method,
+            'request_target'   => $request->requestTarget,
+            'uri'              => (string) $request->uri,
+            'protocol_version' => $request->protocolVersion,
+            'headers'          => $request->headers,
+            'body'             => (string) $request->body,
         ];
     }
 

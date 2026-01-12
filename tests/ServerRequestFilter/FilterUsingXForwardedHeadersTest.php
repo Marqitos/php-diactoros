@@ -11,8 +11,7 @@ use Rodas\Diactoros\ServerRequestFilter\FilterUsingXForwardedHeaders;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-final class FilterUsingXForwardedHeadersTest extends TestCase
-{
+final class FilterUsingXForwardedHeadersTest extends TestCase {
     public function testTrustingStringProxyWithoutSpecifyingTrustedHeadersTrustsAllForwardedHeadersForThatProxy(): void
     {
         $request = new ServerRequest(
@@ -258,14 +257,13 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
     }
 
     /** @psalm-return iterable<string, array{0: string}> */
-    public static function trustedReservedNetworkList(): iterable
-    {
-        yield 'ipv4-localhost' => ['127.0.0.1'];
-        yield 'ipv4-class-a' => ['10.10.10.10'];
-        yield 'ipv4-class-b' => ['172.16.16.16'];
-        yield 'ipv4-class-c' => ['192.168.2.1'];
-        yield 'ipv6-localhost' => ['::1'];
-        yield 'ipv6-private' => ['fdb4:d239:27bc:1d9f:0001:0001:0001:0001'];
+    public static function trustedReservedNetworkList(): iterable {
+        yield 'ipv4-localhost'  => ['127.0.0.1'];
+        yield 'ipv4-class-a'    => ['10.10.10.10'];
+        yield 'ipv4-class-b'    => ['172.16.16.16'];
+        yield 'ipv4-class-c'    => ['192.168.2.1'];
+        yield 'ipv6-localhost'  => ['::1'];
+        yield 'ipv6-private'    => ['fdb4:d239:27bc:1d9f:0001:0001:0001:0001'];
         yield 'ipv6-local-link' => ['fe80:0000:0000:0000:abcd:abcd:abcd:abcd'];
     }
 
@@ -334,16 +332,15 @@ final class FilterUsingXForwardedHeadersTest extends TestCase
     }
 
     /** @psalm-return iterable<string, array{0: string, 1: string}> */
-    public static function xForwardedProtoValues(): iterable
-    {
-        yield 'https-lowercase'  => ['https', 'https'];
-        yield 'https-uppercase'  => ['HTTPS', 'https'];
-        yield 'https-mixed-case' => ['hTTpS', 'https'];
-        yield 'http-lowercase'   => ['http', 'http'];
-        yield 'http-uppercase'   => ['HTTP', 'http'];
-        yield 'http-mixed-case'  => ['hTTp', 'http'];
-        yield 'unknown-value'    => ['foo', 'http'];
-        yield 'empty'            => ['', 'http'];
+    public static function xForwardedProtoValues(): iterable {
+        yield 'https-lowercase'  => ['https',   'https'];
+        yield 'https-uppercase'  => ['HTTPS',   'https'];
+        yield 'https-mixed-case' => ['hTTpS',   'https'];
+        yield 'http-lowercase'   => ['http',    'http'];
+        yield 'http-uppercase'   => ['HTTP',    'http'];
+        yield 'http-mixed-case'  => ['hTTp',    'http'];
+        yield 'unknown-value'    => ['foo',     'http'];
+        yield 'empty'            => ['',        'http'];
     }
 
     #[DataProvider('xForwardedProtoValues')]

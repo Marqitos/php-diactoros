@@ -103,11 +103,9 @@ class Uri implements UriInterface, Stringable {
     }
 
     public private(set) ?int $port = null {
-        get {
-            return $this->isNonStandardPort($this->scheme, $this->host, $this->port)
-                ? $this->port
-                : null;
-        }
+        get => $this->isNonStandardPort($this->scheme, $this->host, $this->port)
+            ? $this->port
+            : null;
         set => $this->port = $value;
     }
 
@@ -207,7 +205,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withScheme(string $scheme): UriInterface {
+    public function withScheme(string $scheme): static {
         $scheme = $this->filterScheme($scheme);
 
         if ($scheme === $this->scheme) {
@@ -237,7 +235,7 @@ class Uri implements UriInterface, Stringable {
         string $user,
         #[SensitiveParameter]
         ?string $password = null
-    ): UriInterface {
+    ): static {
         $info = $this->filterUserInfoPart($user);
         if (null !== $password) {
             $info .= ':' . $this->filterUserInfoPart($password);
@@ -260,7 +258,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withHost(string $host): UriInterface {
+    public function withHost(string $host): static {
         if (strtolower($host) === $this->host) {
             // Do nothing if no change was made.
             return $this;
@@ -276,13 +274,15 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withPort(?int $port): UriInterface {
+    public function withPort(?int $port): static {
         if ($port === $this->port) {
             // Do nothing if no change was made.
             return $this;
         }
 
-        if ($port !== null && ($port < 1 || $port > 65535)) {
+        if ($port !== null &&
+            ($port < 1 ||
+             $port > 65535)) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid port "%d" specified; must be a valid TCP/UDP port',
                 $port
@@ -299,7 +299,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withPath(string $path): UriInterface {
+    public function withPath(string $path): static {
         if (str_contains($path, '?')) {
             throw new InvalidArgumentException(
                 'Invalid path provided; must not contain a query string'
@@ -329,7 +329,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withQuery(string $query): UriInterface {
+    public function withQuery(string $query): static {
         if (str_contains($query, '#')) {
             throw new InvalidArgumentException(
                 'Query string must not include a URI fragment'
@@ -353,7 +353,7 @@ class Uri implements UriInterface, Stringable {
      * {@inheritdoc}
      */
     #[Override]
-    public function withFragment(string $fragment): UriInterface {
+    public function withFragment(string $fragment): static {
         $fragment = $this->filterFragment($fragment);
 
         if ($fragment === $this->fragment) {

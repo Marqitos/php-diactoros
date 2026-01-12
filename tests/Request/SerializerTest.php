@@ -11,6 +11,7 @@ use Rodas\Diactoros\Request\Serializer;
 use Rodas\Diactoros\Stream;
 use Rodas\Diactoros\Uri;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\RequestInterface;
 use Rodas\Psr\Http\Message\RequestMethod;
@@ -76,12 +77,12 @@ final class SerializerTest extends TestCase
             'path-only'      => [
                 'GET /foo HTTP/1.1',
                 '/foo',
-                ['getPath' => '/foo'],
+                ['path' => '/foo'],
             ],
             'path-and-query' => [
                 'GET /foo?bar HTTP/1.1',
                 '/foo?bar',
-                ['getPath' => '/foo', 'getQuery' => 'bar'],
+                ['path' => '/foo', 'query' => 'bar'],
             ],
         ];
     }
@@ -105,8 +106,8 @@ final class SerializerTest extends TestCase
         $this->assertSame($requestTarget, $request->requestTarget);
 
         $uri = $request->uri;
-        foreach ($expectations as $method => $expect) {
-            $this->assertSame($expect, $uri->{$method}());
+        foreach ($expectations as $property => $expect) {
+            $this->assertSame($expect, $uri->{$property});
         }
     }
 
@@ -134,42 +135,42 @@ final class SerializerTest extends TestCase
                 'GET http://example.com/foo HTTP/1.1',
                 'http://example.com/foo',
                 [
-                    'getScheme' => 'http',
-                    'getHost'   => 'example.com',
-                    'getPath'   => '/foo',
+                    'scheme' => 'http',
+                    'host'   => 'example.com',
+                    'path'   => '/foo',
                 ],
             ],
             'path-and-query' => [
                 'GET http://example.com/foo?bar HTTP/1.1',
                 'http://example.com/foo?bar',
                 [
-                    'getScheme' => 'http',
-                    'getHost'   => 'example.com',
-                    'getPath'   => '/foo',
-                    'getQuery'  => 'bar',
+                    'scheme' => 'http',
+                    'host'   => 'example.com',
+                    'path'   => '/foo',
+                    'query'  => 'bar',
                 ],
             ],
             'with-port'      => [
                 'GET http://example.com:8080/foo?bar HTTP/1.1',
                 'http://example.com:8080/foo?bar',
                 [
-                    'getScheme' => 'http',
-                    'getHost'   => 'example.com',
-                    'getPort'   => 8080,
-                    'getPath'   => '/foo',
-                    'getQuery'  => 'bar',
+                    'scheme' => 'http',
+                    'host'   => 'example.com',
+                    'port'   => 8080,
+                    'path'   => '/foo',
+                    'query'  => 'bar',
                 ],
             ],
             'with-authority' => [
                 'GET https://me:too@example.com:8080/foo?bar HTTP/1.1',
                 'https://me:too@example.com:8080/foo?bar',
                 [
-                    'getScheme'   => 'https',
-                    'getUserInfo' => 'me:too',
-                    'getHost'     => 'example.com',
-                    'getPort'     => 8080,
-                    'getPath'     => '/foo',
-                    'getQuery'    => 'bar',
+                    'scheme'   => 'https',
+                    'userInfo' => 'me:too',
+                    'host'     => 'example.com',
+                    'port'     => 8080,
+                    'path'     => '/foo',
+                    'query'    => 'bar',
                 ],
             ],
         ];
@@ -191,34 +192,32 @@ final class SerializerTest extends TestCase
         $message = $line . "\r\nX-Foo-Bar: Baz\r\n\r\nContent";
         $request = Serializer::fromString($message);
 
-        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame('GET', $request->method);
 
-        $this->assertSame($requestTarget, $request->getRequestTarget());
+        $this->assertSame($requestTarget, $request->requestTarget);
 
         $uri = $request->uri;
-        foreach ($expectations as $method => $expect) {
-            $this->assertSame($expect, $uri->{$method}());
+        foreach ($expectations as $property => $expect) {
+            $this->assertSame($expect, $uri->{$property});
         }
     }
 
-    public function testCanDeserializeRequestWithAuthorityForm(): void
-    {
+    public function testCanDeserializeRequestWithAuthorityForm(): void {
         $message = "CONNECT www.example.com:80 HTTP/1.1\r\nX-Foo-Bar: Baz";
         $request = Serializer::fromString($message);
-        $this->assertSame('CONNECT', $request->getMethod());
-        $this->assertSame('www.example.com:80', $request->getRequestTarget());
+        $this->assertSame('CONNECT', $request->method);
+        $this->assertSame('www.example.com:80', $request->requestTarget);
 
         $uri = $request->uri;
         $this->assertNotSame('www.example.com', $uri->host);
         $this->assertNotSame(80, $uri->port);
     }
 
-    public function testCanDeserializeRequestWithAsteriskForm(): void
-    {
+    public function testCanDeserializeRequestWithAsteriskForm(): void {
         $message = "OPTIONS * HTTP/1.1\r\nHost: www.example.com";
         $request = Serializer::fromString($message);
-        $this->assertSame('OPTIONS', $request->getMethod());
-        $this->assertSame('*', $request->getRequestTarget());
+        $this->assertSame('OPTIONS', $request->method);
+        $this->assertSame('*', $request->requestTarget);
 
         $uri = $request->uri;
         $this->assertNotSame('www.example.com', $uri->host);
@@ -349,7 +348,7 @@ final class SerializerTest extends TestCase
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->method('isReadable')
+            ->method(PropertyHook::get('isReadable'))
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
@@ -362,11 +361,11 @@ final class SerializerTest extends TestCase
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->method('isReadable')
+            ->method(PropertyHook::get('isReadable'))
             ->willReturn(true);
         $stream
             ->expects($this->once())
-            ->method('isSeekable')
+            ->method(PropertyHook::get('isSeekable'))
             ->willReturn(false);
 
         $this->expectException(InvalidArgumentException::class);
@@ -382,11 +381,11 @@ final class SerializerTest extends TestCase
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->expects($this->once())
-            ->method('isReadable')
+            ->method(PropertyHook::get('isReadable'))
             ->willReturn(true);
         $stream
             ->expects($this->once())
-            ->method('isSeekable')
+            ->method(PropertyHook::get('isSeekable'))
             ->willReturn(true);
 
         // assert that full request body is not read, and returned as RelativeStream instead

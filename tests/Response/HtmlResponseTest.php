@@ -9,30 +9,29 @@ use Rodas\Diactoros\Response\HtmlResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StatusCode;
 
-final class HtmlResponseTest extends TestCase
-{
-    public function testConstructorAcceptsHtmlString(): void
-    {
+final class HtmlResponseTest extends TestCase {
+    public function testConstructorAcceptsHtmlString(): void {
         $body = '<html>Uh oh not found</html>';
 
         $response = new HtmlResponse($body);
         $this->assertSame($body, (string) $response->body);
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $response->status);
+        $this->assertSame(StatusCode::OK, $response->statusCode);
     }
 
-    public function testConstructorAllowsPassingStatus(): void
-    {
+    public function testConstructorAllowsPassingStatus(): void {
         $body   = '<html>Uh oh not found</html>';
         $status = 404;
 
         $response = new HtmlResponse($body, $status);
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $response->status);
+        $this->assertSame(StatusCode::NOT_FOUND, $response->statusCode);
         $this->assertSame($body, (string) $response->body);
     }
 
-    public function testConstructorAllowsPassingHeaders(): void
-    {
+    public function testConstructorAllowsPassingHeaders(): void {
         $body    = '<html>Uh oh not found</html>';
         $status  = 404;
         $headers = [
@@ -42,20 +41,19 @@ final class HtmlResponseTest extends TestCase
         $response = new HtmlResponse($body, $status, $headers);
         $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
         $this->assertSame('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $response->status);
+        $this->assertSame(StatusCode::NOT_FOUND, $response->statusCode);
         $this->assertSame($body, (string) $response->body);
     }
 
-    public function testAllowsStreamsForResponseBody(): void
-    {
+    public function testAllowsStreamsForResponseBody(): void {
         $body     = $this->createStub(StreamInterface::class);
         $response = new HtmlResponse($body);
         $this->assertSame($body, $response->body);
     }
 
     /** @return array<non-empty-string, array{mixed}> */
-    public static function invalidHtmlContent(): array
-    {
+    public static function invalidHtmlContent(): array {
         return [
             'null'       => [null],
             'true'       => [true],
@@ -70,16 +68,14 @@ final class HtmlResponseTest extends TestCase
     }
 
     #[DataProvider('invalidHtmlContent')]
-    public function testRaisesExceptionForNonStringNonStreamBodyContent(mixed $body): void
-    {
+    public function testRaisesExceptionForNonStringNonStreamBodyContent(mixed $body): void {
         $this->expectException(InvalidArgumentException::class);
 
         /** @psalm-suppress MixedArgument */
         new HtmlResponse($body);
     }
 
-    public function testConstructorRewindsBodyStream(): void
-    {
+    public function testConstructorRewindsBodyStream(): void {
         $html     = '<p>test data</p>';
         $response = new HtmlResponse($html);
 

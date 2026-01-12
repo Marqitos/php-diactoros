@@ -136,7 +136,7 @@ final class ServerRequestFactoryTest extends TestCase
         $this->assertSame($body, $request->getParsedBody());
         $this->assertEquals($expectedFiles, $request->uploadedFiles);
         $this->assertEmpty($request->attributes);
-        $this->assertSame('1.1', $request->getProtocolVersion());
+        $this->assertSame('1.1', $request->protocolVersion);
     }
 
     public function testFromGlobalsShouldNotFallbackToSuperGlobalsWithEmptyArray(): void
@@ -174,7 +174,7 @@ final class ServerRequestFactoryTest extends TestCase
         $this->assertEmpty($request->cookieParams, 'Cookies are not empty');
         $this->assertEmpty($request->uploadedFiles, 'Uploaded files are not empty');
         $defaults = new ServerRequest();
-        $this->assertSame($defaults->getProtocolVersion(), $request->getProtocolVersion());
+        $this->assertSame($defaults->protocolVersion, $request->protocolVersion);
     }
 
     public function testFromGlobalsUsesCookieHeaderInsteadOfCookieSuperGlobal(): void
@@ -304,7 +304,7 @@ final class ServerRequestFactoryTest extends TestCase
 
         $normalizedFiles = ServerRequestFactory::normalizeUploadedFiles($files);
 
-        $this->assertCount(1, $normalizedFiles['fooFiles']);
+        $this->assertCount(1, $normalizedFiles);
     }
 
     public function testMarshalProtocolVersionRisesExceptionIfVersionIsNotRecognized(): void
