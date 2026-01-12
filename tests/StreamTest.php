@@ -11,6 +11,7 @@ use Rodas\Diactoros\Stream;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use RuntimeException;
@@ -137,8 +138,7 @@ final class StreamTest extends TestCase
         new Stream(['  THIS WILL NOT WORK  ']);
     }
 
-    public function testStringSerializationReturnsEmptyStringWhenStreamIsNotReadable(): void
-    {
+    public function testStringSerializationReturnsEmptyStringWhenStreamIsNotReadable(): void {
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         assert($this->tmpnam !== false, 'Always true condition for psalm type safety');
         file_put_contents($this->tmpnam, 'FOO BAR');
@@ -147,8 +147,7 @@ final class StreamTest extends TestCase
         $this->assertSame('', $stream->__toString());
     }
 
-    public function testCloseClosesResource(): void
-    {
+    public function testCloseClosesResource(): void {
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         assert($this->tmpnam !== false, 'Always true condition for psalm type safety');
         $resource = fopen($this->tmpnam, 'wb+');
@@ -158,8 +157,7 @@ final class StreamTest extends TestCase
         $this->assertFalse(is_resource($resource));
     }
 
-    public function testCloseUnsetsResource(): void
-    {
+    public function testCloseUnsetsResource(): void {
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         assert($this->tmpnam !== false, 'Always true condition for psalm type safety');
         $resource = fopen($this->tmpnam, 'wb+');
@@ -565,6 +563,7 @@ final class StreamTest extends TestCase
 
     /**
      * @return array<string, string[]>
+     */
     public static function invalidStringResources(): array
     {
         return [
@@ -575,14 +574,12 @@ final class StreamTest extends TestCase
     }
 
     #[DataProvider('invalidStringResources')]
-    public function testAttachWithInvalidStringResourceRaisesException(string $stream): void
-    {
+    public function testAttachWithInvalidStringResourceRaisesException(string $stream): void {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Empty or non-existent stream identifier or file path provided');
 
         $this->stream->attach($stream);
     }
-     */
 
     public function testAttachWithResourceAttachesResource(): void
     {
@@ -764,11 +761,13 @@ final class StreamTest extends TestCase
         $stream = $this
             ->getMockBuilder(Stream::class)
             ->setConstructorArgs([$resource])
-            ->onlyMethods(['isSeekable'])
             ->getMock();
 
-        $stream->expects($this->any())->method('isSeekable')
+        $stream->expects($this->any())
+            ->method(PropertyHook::get('isSeekable'))
             ->willReturn(false);
+
+        $stream = new Stream($resource);
 
         $this->assertSame('FOO BAR', $stream->__toString());
     }

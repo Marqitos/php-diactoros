@@ -5,88 +5,76 @@ declare(strict_types=1);
 namespace Rodas\Test\Diactoros;
 
 use InvalidArgumentException;
-use Rodas\Diactoros\ServerRequest;
-use Rodas\Diactoros\UploadedFile;
-use Rodas\Diactoros\Uri;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use Rodas\Diactoros\ServerRequest;
+use Rodas\Diactoros\UploadedFile;
+use Rodas\Diactoros\Uri;
+use Rodas\Psr\Http\Message\RequestMethod;
 
-final class ServerRequestTest extends TestCase
-{
+final class ServerRequestTest extends TestCase {
     private ServerRequest $request;
 
     #[Override]
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         $this->request = new ServerRequest();
     }
 
-    public function testServerParamsAreEmptyByDefault(): void
-    {
+    public function testServerParamsAreEmptyByDefault(): void {
         $this->assertEmpty($this->request->serverParams);
     }
 
-    public function testQueryParamsAreEmptyByDefault(): void
-    {
+    public function testQueryParamsAreEmptyByDefault(): void {
         $this->assertEmpty($this->request->queryParams);
     }
 
-    public function testQueryParamsMutatorReturnsCloneWithChanges(): void
-    {
+    public function testQueryParamsMutatorReturnsCloneWithChanges(): void {
         $value   = ['foo' => 'bar'];
         $request = $this->request->withQueryParams($value);
         $this->assertNotSame($this->request, $request);
         $this->assertSame($value, $request->queryParams);
     }
 
-    public function testCookiesAreEmptyByDefault(): void
-    {
+    public function testCookiesAreEmptyByDefault(): void {
         $this->assertEmpty($this->request->cookieParams);
     }
 
-    public function testCookiesMutatorReturnsCloneWithChanges(): void
-    {
+    public function testCookiesMutatorReturnsCloneWithChanges(): void {
         $value   = ['foo' => 'bar'];
         $request = $this->request->withCookieParams($value);
         $this->assertNotSame($this->request, $request);
         $this->assertSame($value, $request->cookieParams);
     }
 
-    public function testUploadedFilesAreEmptyByDefault(): void
-    {
+    public function testUploadedFilesAreEmptyByDefault(): void {
         $this->assertEmpty($this->request->uploadedFiles);
     }
 
-    public function testParsedBodyIsEmptyByDefault(): void
-    {
+    public function testParsedBodyIsEmptyByDefault(): void {
         $this->assertEmpty($this->request->getParsedBody());
     }
 
-    public function testParsedBodyMutatorReturnsCloneWithChanges(): void
-    {
+    public function testParsedBodyMutatorReturnsCloneWithChanges(): void {
         $value   = ['foo' => 'bar'];
         $request = $this->request->withParsedBody($value);
         $this->assertNotSame($this->request, $request);
         $this->assertSame($value, $request->getParsedBody());
     }
 
-    public function testAttributesAreEmptyByDefault(): void
-    {
+    public function testAttributesAreEmptyByDefault(): void {
         $this->assertEmpty($this->request->attributes);
     }
 
-    public function testSingleAttributesWhenEmptyByDefault(): void
-    {
+    public function testSingleAttributesWhenEmptyByDefault(): void {
         $this->assertEmpty($this->request->getAttribute('does-not-exist'));
     }
 
     #[Depends('testAttributesAreEmptyByDefault')]
-    public function testAttributeMutatorReturnsCloneWithChanges(): ServerRequest
-    {
+    public function testAttributeMutatorReturnsCloneWithChanges(): ServerRequest {
         $request = $this->request->withAttribute('foo', 'bar');
         $this->assertNotSame($this->request, $request);
         $this->assertSame('bar', $request->getAttribute('foo'));
@@ -94,16 +82,14 @@ final class ServerRequestTest extends TestCase
     }
 
     #[Depends('testAttributeMutatorReturnsCloneWithChanges')]
-    public function testRemovingAttributeReturnsCloneWithoutAttribute(ServerRequest $request): void
-    {
+    public function testRemovingAttributeReturnsCloneWithoutAttribute(ServerRequest $request): void {
         $new = $request->withoutAttribute('foo');
         $this->assertNotSame($request, $new);
         $this->assertNull($new->getAttribute('foo', null));
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string|null, non-empty-string}> */
-    public static function provideMethods(): array
-    {
+    public static function provideMethods(): array {
         return [
             'post' => ['POST'   , 'POST'    , RequestMethod::POST],
             'get'  => ['GET'    , 'GET'     , RequestMethod::GET],
@@ -116,8 +102,7 @@ final class ServerRequestTest extends TestCase
      * @param non-empty-string $methodReturned
      */
     #[DataProvider('provideMethods')]
-    public function testUsesProvidedConstructorArguments(?string $parameterMethod, string $methodReturned, RequestMethod $requestMethodReturned): void
-    {
+    public function testUsesProvidedConstructorArguments(?string $parameterMethod, string $methodReturned, RequestMethod $requestMethodReturned): void {
         $server = [
             'foo' => 'bar',
             'baz' => 'bat',
@@ -174,45 +159,39 @@ final class ServerRequestTest extends TestCase
     }
 
     #[Group('46')]
-    public function testCookieParamsAreAnEmptyArrayAtInitialization(): void
-    {
+    public function testCookieParamsAreAnEmptyArrayAtInitialization(): void {
         $request = new ServerRequest();
         $this->assertIsArray($request->cookieParams);
         $this->assertCount(0, $request->cookieParams);
     }
 
     #[Group('46')]
-    public function testQueryParamsAreAnEmptyArrayAtInitialization(): void
-    {
+    public function testQueryParamsAreAnEmptyArrayAtInitialization(): void {
         $request = new ServerRequest();
         $this->assertIsArray($request->queryParams);
         $this->assertCount(0, $request->queryParams);
     }
 
     #[Group('46')]
-    public function testParsedBodyIsNullAtInitialization(): void
-    {
+    public function testParsedBodyIsNullAtInitialization(): void {
         $request = new ServerRequest();
         $this->assertNull($request->getParsedBody());
     }
 
-    public function testAllowsRemovingAttributeWithNullValue(): void
-    {
+    public function testAllowsRemovingAttributeWithNullValue(): void {
         $request = new ServerRequest();
         $request = $request->withAttribute('boo', null);
         $request = $request->withoutAttribute('boo');
         $this->assertSame([], $request->attributes);
     }
 
-    public function testAllowsRemovingNonExistentAttribute(): void
-    {
+    public function testAllowsRemovingNonExistentAttribute(): void {
         $request = new ServerRequest();
         $request = $request->withoutAttribute('boo');
         $this->assertSame([], $request->attributes);
     }
 
-    public function testTryToAddInvalidUploadedFiles(): void
-    {
+    public function testTryToAddInvalidUploadedFiles(): void {
         $request = new ServerRequest();
 
         $this->expectException(InvalidArgumentException::class);
@@ -220,8 +199,7 @@ final class ServerRequestTest extends TestCase
         $request->withUploadedFiles([null]);
     }
 
-    public function testNestedUploadedFiles(): void
-    {
+    public function testNestedUploadedFiles(): void {
         $request = new ServerRequest();
 
         $uploadedFiles = [

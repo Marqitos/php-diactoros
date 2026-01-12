@@ -156,7 +156,7 @@ class Response implements ResponseInterface {
         set => $this->reasonPhrase = $value;
     }
 
-    public private(set) int $status {
+    public private(set) int $status = 200 {
         get => $this->status;
         set(int $value) {
             if ($value < static::MIN_STATUS_CODE_VALUE ||
@@ -170,6 +170,7 @@ class Response implements ResponseInterface {
             } else {
                 $statusCode = StatusCode::tryFrom($value);
                 if ($this->statusCode !== $statusCode) {
+
                     $this->statusCode = $statusCode;
                 }
             }
@@ -180,16 +181,15 @@ class Response implements ResponseInterface {
     /**
      * {@inheritdoc}
      */
-    public private(set) ?StatusCode $statusCode {
+    public private(set) ?StatusCode $statusCode = StatusCode::OK {
         get => $this->statusCode;
         set(?StatusCode $value)  {
-            if ($value === null) {
-                throw new InvalidArgumentException('Status code cannot be null');
-            }
-            $this->statusCode = $value;
-            $code       = $statusCode->value;
-            if ($this->status !== $code) {
-                $this->status = $code;
+            $this->statusCode   = $value;
+            if ($value !== null) {
+                $code               = $value->value;
+                if ($this->status !== $code) {
+                    $this->status = $code;
+                }
             }
         }
     }
@@ -202,7 +202,7 @@ class Response implements ResponseInterface {
      */
     public function __construct($body = 'php://memory', int $status = 200, array $headers = []) {
         $this->setStatusCode($status);
-        $this->stream = $this->getStream($body, 'wb+');
+        $this->body = $this->getStream($body, 'wb+');
         $this->setHeaders($headers);
     }
 

@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
+use Override;
 use Rodas\Psr\Http\Message\MessageInterface;
 use Rodas\Psr\Http\Message\StreamInterface;
 
@@ -71,7 +72,6 @@ trait MessageTrait {
         set => $this->body = $value;
     }
 
-
     /**
      * Return an instance with the specified HTTP protocol version.
      *
@@ -85,8 +85,7 @@ trait MessageTrait {
      * @param string $version HTTP protocol version
      * @return static
      */
-    public function withProtocolVersion(string $version): MessageInterface
-    {
+    public function withProtocolVersion(string $version): MessageInterface {
         $this->validateProtocolVersion($version);
         $new           = clone $this;
         $new->protocolVersion = $version;
@@ -152,17 +151,16 @@ trait MessageTrait {
     public function withHeader(string $name, $value): MessageInterface {
         $this->assertHeader($name);
 
-        $normalized = strtolower($name);
-
-        $new = clone $this;
+        $normalized                    = strtolower($name);
+        $new                           = clone $this;
+        $newHeaders                    = $new->headers;
         if ($new->hasHeader($name)) {
-            unset($new->headers[$new->headerNames[$normalized]]);
+            unset($newHeaders[$new->headerNames[$normalized]]);
         }
 
-        $value = $this->filterHeaderValue($value);
-
         $new->headerNames[$normalized] = $name;
-        $new->headers[$name]           = $value;
+        $newHeaders[$name]             = $this->filterHeaderValue($value);
+        $new->headers                  = $newHeaders;
 
         return $new;
     }
@@ -193,9 +191,11 @@ trait MessageTrait {
 
         $header = $this->headerNames[strtolower($name)];
 
-        $new                   = clone $this;
-        $value                 = $this->filterHeaderValue($value);
-        $new->headers[$header] = array_merge($this->headers[$header], $value);
+        $new                    = clone $this;
+        $value                  = $this->filterHeaderValue($value);
+        $newHeaders             = $new->headers;
+        $newHeaders[$header]    = array_merge($this->headers[$header], $value);
+        $new->headers           = $newHeaders;
         return $new;
     }
 
@@ -220,7 +220,9 @@ trait MessageTrait {
         $original   = $this->headerNames[$normalized];
 
         $new = clone $this;
-        unset($new->headers[$original], $new->headerNames[$normalized]);
+        $newHeaders = $new->headers;
+        unset($newHeaders[$original], $new->headerNames[$normalized]);
+        $new->headers = $newHeaders;
         return $new;
     }
 

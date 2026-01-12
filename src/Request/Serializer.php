@@ -79,9 +79,9 @@ final class Serializer extends AbstractSerializer {
      * Serialize a request message to a string.
      */
     public static function toString(RequestInterface $request): string {
-        $httpMethod = $request->getMethod();
-        $headers    = self::serializeHeaders($request->getHeaders());
-        $body       = (string) $request->getBody();
+        $httpMethod = $request->method;
+        $headers    = self::serializeHeaders($request->headers);
+        $body       = (string) $request->body;
         $format     = '%s %s HTTP/%s%s%s';
 
         if (! empty($headers)) {
@@ -94,8 +94,8 @@ final class Serializer extends AbstractSerializer {
         return sprintf(
             $format,
             $httpMethod,
-            $request->getRequestTarget(),
-            $request->getProtocolVersion(),
+            $request->requestTarget,
+            $request->protocolVersion,
             $headers,
             $body
         );

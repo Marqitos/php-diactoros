@@ -67,9 +67,9 @@ final class Serializer extends AbstractSerializer {
      * Create a string representation of a response.
      */
     public static function toString(ResponseInterface $response): string {
-        $reasonPhrase = $response->getReasonPhrase();
-        $headers      = self::serializeHeaders($response->getHeaders());
-        $body         = (string) $response->getBody();
+        $reasonPhrase = $response->reasonPhrase;
+        $headers      = self::serializeHeaders($response->headers);
+        $body         = (string) $response->body;
         $format       = 'HTTP/%s %d%s%s%s';
 
         if (! empty($headers)) {
@@ -80,8 +80,8 @@ final class Serializer extends AbstractSerializer {
 
         return sprintf(
             $format,
-            $response->getProtocolVersion(),
-            $response->getStatusCode(),
+            $response->protocolVersion,
+            $response->status,
             $reasonPhrase ? ' ' . $reasonPhrase : '',
             $headers,
             $body

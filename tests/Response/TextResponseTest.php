@@ -6,10 +6,12 @@ namespace Rodas\Test\Diactoros\Response;
 
 use InvalidArgumentException;
 use Rodas\Diactoros\Response\TextResponse;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Rodas\Psr\Http\Message\StreamInterface;
+use Rodas\Psr\Http\Message\StatusCode;
 
 final class TextResponseTest extends TestCase
 {
@@ -19,7 +21,8 @@ final class TextResponseTest extends TestCase
 
         $response = new TextResponse($body);
         $this->assertSame($body, (string) $response->body);
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $response->status);
+        $this->assertSame(StatusCode::OK, $response->statusCode);
     }
 
     public function testConstructorAllowsPassingStatus(): void
@@ -28,7 +31,8 @@ final class TextResponseTest extends TestCase
         $status = 404;
 
         $response = new TextResponse($body, $status);
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $response->status);
+        $this->assertSame(StatusCode::NOT_FOUND, $response->statusCode);
         $this->assertSame($body, (string) $response->body);
     }
 
@@ -43,12 +47,13 @@ final class TextResponseTest extends TestCase
         $response = new TextResponse($body, $status, $headers);
         $this->assertSame(['foo-bar'], $response->getHeader('x-custom'));
         $this->assertSame('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $response->status);
+        $this->assertSame(StatusCode::NOT_FOUND, $response->statusCode);
         $this->assertSame($body, (string) $response->body);
     }
 
-    public function testAllowsStreamsForResponseBody(): void
-    {
+    #[AllowMockObjectsWithoutExpectations]
+    public function testAllowsStreamsForResponseBody(): void {
         $body     = $this->createMock(StreamInterface::class);
         $response = new TextResponse($body);
         $this->assertSame($body, $response->body);

@@ -7,6 +7,7 @@ namespace Rodas\Test\Diactoros;
 use Rodas\Diactoros\RelativeStream;
 use Rodas\Diactoros\Stream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -20,7 +21,7 @@ final class RelativeStreamTest extends TestCase
     public function testToString(): void
     {
         $decorated = $this->createMock(Stream::class);
-        $decorated->method('isSeekable')->willReturn(true);
+        $decorated->method(PropertyHook::get('isSeekable'))->willReturn(true);
         $decorated->method('tell')->willReturn(100);
         $decorated->expects(self::once())->method('seek')->with(100, SEEK_SET);
         $decorated->expects(self::once())->method('getContents')->willReturn('foobarbaz');
@@ -51,7 +52,7 @@ final class RelativeStreamTest extends TestCase
     public function testGetSize(): void
     {
         $decorated = $this->createMock(Stream::class);
-        $decorated->expects(self::once())->method('getSize')->willReturn(250);
+        $decorated->expects(self::once())->method(PropertyHook::get('size'))->willReturn(250);
         $stream = new RelativeStream($decorated, 100);
         $ret    = $stream->size;
         $this->assertSame(150, $ret);
@@ -69,7 +70,7 @@ final class RelativeStreamTest extends TestCase
     public function testIsSeekable(): void
     {
         $decorated = $this->createMock(Stream::class);
-        $decorated->expects(self::once())->method('isSeekable')->willReturn(true);
+        $decorated->expects(self::once())->method(PropertyHook::get('isSeekable'))->willReturn(true);
         $stream = new RelativeStream($decorated, 100);
         $ret    = $stream->isSeekable;
         $this->assertSame(true, $ret);
@@ -77,7 +78,7 @@ final class RelativeStreamTest extends TestCase
 
     public function testIsWritable(): void {
         $decorated = $this->createMock(Stream::class);
-        $decorated->expects(self::once())->method('isWritable')->willReturn(true);
+        $decorated->expects(self::once())->method(PropertyHook::get('isWritable'))->willReturn(true);
         $stream = new RelativeStream($decorated, 100);
         $ret    = $stream->isWritable;
         $this->assertSame(true, $ret);
@@ -86,7 +87,7 @@ final class RelativeStreamTest extends TestCase
     public function testIsReadable(): void
     {
         $decorated = $this->createMock(Stream::class);
-        $decorated->expects(self::once())->method('isReadable')->willReturn(false);
+        $decorated->expects(self::once())->method(PropertyHook::get('isReadable'))->willReturn(false);
         $stream = new RelativeStream($decorated, 100);
         $ret    = $stream->isReadable;
         $this->assertSame(false, $ret);
@@ -189,7 +190,7 @@ final class RelativeStreamTest extends TestCase
     public function testCanReadContentFromNotSeekableResource(): void
     {
         $decorated = $this->createMock(Stream::class);
-        $decorated->method('isSeekable')->willReturn(false);
+        $decorated->method(PropertyHook::get('isSeekable'))->willReturn(false);
         $decorated->expects(self::never())->method('seek');
         $decorated->method('tell')->willReturn(3);
         $decorated->method('getContents')->willReturn('CONTENTS');

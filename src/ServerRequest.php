@@ -20,6 +20,7 @@ namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
 use Override;
+use Rodas\Psr\Http\Message\RequestMethod;
 use Rodas\Psr\Http\Message\ServerRequestInterface;
 use Rodas\Psr\Http\Message\StreamInterface;
 use Rodas\Psr\Http\Message\UploadedFileInterface;
@@ -71,13 +72,15 @@ class ServerRequest implements ServerRequestInterface {
      */
     public protected(set) array $headers = [] {
         get {
-            $headers = $this->headers;
             if (! $this->hasHeader('host') &&
                 $this->uri->host) {
+                $headers = $this->headers;
                 $headers['Host'] = [$this->getHostFromUri()];
+                $this->headerNames['host']  = 'Host';
+                $this->headers = $headers;
             }
 
-            return $headers;
+            return $this->headers;
         }
         set => $this->headers = $value;
     }
@@ -134,11 +137,12 @@ class ServerRequest implements ServerRequestInterface {
             $body = new Stream($body, 'r');
         }
 
-        $this->initialize($uri, $method, $body, $headers);
         $this->cookieParams     = $cookieParams;
+        $this->queryParams      = $queryParams;
         $this->uploadedFiles    = $uploadedFiles;
         $this->serverParams     = $serverParams;
         $this->protocolVersion  = $protocol;
+        $this->initialize($uri, $method, $body, $headers);
     }
 
     /**

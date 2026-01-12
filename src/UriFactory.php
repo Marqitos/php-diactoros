@@ -136,16 +136,16 @@ class UriFactory implements UriFactoryInterface {
         static $defaults = ['', null];
 
         $host = self::getHeaderFromArray('host', $headers, false);
-        if ($host !== false) {
+        if ($host !== false &&
+            ! preg_match('/[\\t ,]/', $host)) {
             // Ignore obviously malformed host headers:
             // - Whitespace is invalid within a hostname and break the URI representation within HTTP.
             //   non-printable characters other than SPACE and TAB are already rejected by HeaderSecurity.
             // - A comma indicates that multiple host headers have been sent which is not legal
             //   and might be used in an attack where a load balancer sees a different host header
             //   than Diactoros.
-            if (! preg_match('/[\\t ,]/', $host)) {
-                return self::marshalHostAndPortFromHeader($host);
-            }
+
+            return self::marshalHostAndPortFromHeader($host);
         }
 
         if (! isset($server['SERVER_NAME'])) {
@@ -153,12 +153,13 @@ class UriFactory implements UriFactoryInterface {
         }
 
         $host = (string) $server['SERVER_NAME'];
-        $port = isset($server['SERVER_PORT']) ? (int) $server['SERVER_PORT'] : null;
+        $port = isset($server['SERVER_PORT'])
+            ? (int) $server['SERVER_PORT']
+            : null;
 
-        if (
-            ! isset($server['SERVER_ADDR'])
-            || ! preg_match('/^\[[0-9a-fA-F\:]+\]$/', $host)
-        ) {
+        if (! isset($server['SERVER_ADDR']) ||
+            ! preg_match('/^\[[0-9a-fA-F\:]+\]$/', $host)) {
+
             return [$host, $port];
         }
 

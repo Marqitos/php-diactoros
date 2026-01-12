@@ -10,6 +10,7 @@ use DOMXPath;
 use InvalidArgumentException;
 use Rodas\Diactoros\Response;
 use Rodas\Diactoros\Stream;
+use Rodas\Psr\Http\Message\StatusCode;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -50,20 +51,22 @@ final class ResponseTest extends TestCase
 
     public function testStatusCodeIs200ByDefault(): void
     {
-        $this->assertSame(200, $this->response->getStatusCode());
+        $this->assertSame(200, $this->response->status);
+        $this->assertSame(StatusCode::OK, $this->response->statusCode);
     }
 
     public function testStatusCodeMutatorReturnsCloneWithChanges(): void
     {
         $response = $this->response->withStatus(400);
         $this->assertNotSame($this->response, $response);
-        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame(400, $response->status);
+        $this->assertSame(StatusCode::BAD_REQUEST, $response->statusCode);
     }
 
     public function testReasonPhraseDefaultsToStandards(): void
     {
         $response = $this->response->withStatus(422);
-        $this->assertSame('Unprocessable Content', $response->getReasonPhrase());
+        $this->assertSame('Unprocessable Content', $response->reasonPhrase);
     }
 
     private static function fetchIanaStatusCodes(): DOMDocument
@@ -177,18 +180,16 @@ final class ResponseTest extends TestCase
 
     /**
      * @param non-empty-string $reasonPhrase
-    #[DataProvider('ianaCodesReasonPhrasesProvider')]
-    public function testReasonPhraseDefaultsAgainstIana(int $code, string $reasonPhrase): void
-    {
-        $response = $this->response->withStatus($code);
-        $this->assertSame($reasonPhrase, $response->getReasonPhrase());
-    }
      */
+    #[DataProvider('ianaCodesReasonPhrasesProvider')]
+    public function testReasonPhraseDefaultsAgainstIana(int $code, string $reasonPhrase): void {
+        $response = $this->response->withStatus($code);
+        $this->assertSame($reasonPhrase, $response->reasonPhrase);
+    }
 
-    public function testCanSetCustomReasonPhrase(): void
-    {
+    public function testCanSetCustomReasonPhrase(): void {
         $response = $this->response->withStatus(422, 'Foo Bar!');
-        $this->assertSame('Foo Bar!', $response->getReasonPhrase());
+        $this->assertSame('Foo Bar!', $response->reasonPhrase);
     }
 
     public function testConstructorRaisesExceptionForInvalidStream(): void
@@ -209,33 +210,34 @@ final class ResponseTest extends TestCase
 
         $response = new Response($body, $status, $headers);
         $this->assertSame($body, $response->body);
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame($headers, $response->getHeaders());
+        $this->assertSame(302, $response->status);
+        $this->assertSame(StatusCode::FOUND, $response->statusCode);
+        $this->assertSame($headers, $response->headers);
     }
 
     #[DataProvider('validStatusCodes')]
-    public function testCreateWithValidStatusCodes(int $code): void
+    public function testCreateWithValidStatusCodes(int $status, ?StatusCode $statusCode): void
     {
-        $response = $this->response->withStatus($code);
+        $response = $this->response->withStatus($status);
 
-        $result = $response->getStatusCode();
+        $statusResult       = $response->status;
+        $statusCodeResult   = $response->statusCode;
 
-        $this->assertSame($code, $result);
+        $this->assertSame($status, $statusResult);
+        $this->assertSame($statusCode, $statusCodeResult);
     }
 
     /** @return non-empty-array<non-empty-string, array{int}> */
-    public static function validStatusCodes(): array
-    {
+    public static function validStatusCodes(): array {
         return [
-            'minimum' => [100],
-            'middle'  => [300],
-            'maximum' => [599],
+            'minimum' => [100, StatusCode::CONTINUE],
+            'middle'  => [300, StatusCode::MULTIPLE_CHOICES],
+            'maximum' => [599, null],
         ];
     }
 
     #[DataProvider('invalidStatusCodes')]
-    public function testCannotSetInvalidStatusCode(mixed $code): void
-    {
+    public function testCannotSetInvalidStatusCode(mixed $code): void {
         $this->expectException(InvalidArgumentException::class);
 
         /** @psalm-suppress MixedArgument */
@@ -243,8 +245,7 @@ final class ResponseTest extends TestCase
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
-    public static function invalidStatusCodes(): array
-    {
+    public static function invalidStatusCodes(): array {
         return [
             'too-low'  => [99],
             'too-high' => [600],
@@ -252,8 +253,7 @@ final class ResponseTest extends TestCase
     }
 
     /** @return non-empty-array<non-empty-string, array{mixed}> */
-    public static function invalidResponseBody(): array
-    {
+    public static function invalidResponseBody(): array {
         return [
             'true'     => [true],
             'false'    => [false],
@@ -265,8 +265,7 @@ final class ResponseTest extends TestCase
     }
 
     #[DataProvider('invalidResponseBody')]
-    public function testConstructorRaisesExceptionForInvalidBody(mixed $body): void
-    {
+    public function testConstructorRaisesExceptionForInvalidBody(mixed $body): void {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('stream');
 
@@ -306,8 +305,8 @@ final class ResponseTest extends TestCase
     public function testReasonPhraseCanBeEmpty(): void
     {
         $response = $this->response->withStatus(555);
-        $this->assertIsString($response->getReasonPhrase());
-        $this->assertEmpty($response->getReasonPhrase());
+        $this->assertIsString($response->reasonPhrase);
+        $this->assertEmpty($response->reasonPhrase);
     }
 
     /** @return non-empty-array<non-empty-string, array{non-empty-string, non-empty-string|non-empty-list<non-empty-string>}> */

@@ -19,9 +19,8 @@ declare(strict_types=1);
 namespace Rodas\Diactoros;
 
 use InvalidArgumentException;
-use Override;
 use Rodas\Psr\Http\Message\RequestInterface;
-use Rodas\Psr\Http\Message\StatusCode;
+use Rodas\Psr\Http\Message\RequestMethod;
 use Rodas\Psr\Http\Message\StreamInterface;
 use Rodas\Psr\Http\Message\UriInterface;
 
@@ -44,7 +43,7 @@ class Request implements RequestInterface {
      * @param array<non-empty-string, string|string[]> $headers Headers for the message, if any.
      * @throws InvalidArgumentException For any invalid value.
      */
-    public function __construct($uri = null, ?string $method = null, $body = 'php://temp', array $headers = []) {
+    public function __construct(UriInterface|string|null $uri = null, RequestMethod|string|null $method = null, $body = 'php://temp', array $headers = []) {
         $this->initialize($uri, $method, $body, $headers);
     }
 
@@ -55,13 +54,16 @@ class Request implements RequestInterface {
      */
     public protected(set) array $headers = [] {
         get {
-            $headers = $this->headers;
             if (! $this->hasHeader('host') &&
                 $this->uri->host) {
+
+                $headers = $this->headers;
                 $headers['Host'] = [$this->getHostFromUri()];
+                $this->headerNames['host'] = 'Host';
+                $this->headers = $headers;
             }
 
-            return $headers;
+            return $this->headers;
         }
         set => $this->headers = $value;
     }

@@ -6,6 +6,7 @@ namespace Rodas\Test\Diactoros\Response;
 
 use InvalidArgumentException;
 use Rodas\Diactoros\Response\JsonResponse;
+use Rodas\Psr\Http\Message\StatusCode;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -35,7 +36,8 @@ final class JsonResponseTest extends TestCase {
         $json = '{"nested":{"json":["tree"]}}';
 
         $response = new JsonResponse($data);
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $response->status);
+        $this->assertSame(StatusCode::OK, $response->statusCode);
         $this->assertSame('application/json', $response->getHeaderLine('content-type'));
         $this->assertSame($json, (string) $response->body);
     }
@@ -58,7 +60,8 @@ final class JsonResponseTest extends TestCase {
     #[DataProvider('scalarValuesForJSON')]
     public function testScalarValuePassedToConstructorJsonEncodesDirectly(mixed $value): void {
         $response = new JsonResponse($value);
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $response->status);
+        $this->assertSame(StatusCode::OK, $response->statusCode);
         $this->assertSame('application/json', $response->getHeaderLine('content-type'));
         // 15 is the default mask used by JsonResponse
         $this->assertSame(json_encode($value, 15), (string) $response->body);
@@ -66,7 +69,8 @@ final class JsonResponseTest extends TestCase {
 
     public function testCanProvideStatusCodeToConstructor(): void {
         $response = new JsonResponse(null, 404);
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $response->status);
+        $this->assertSame(StatusCode::NOT_FOUND, $response->statusCode);
     }
 
     public function testCanProvideAlternateContentTypeViaHeadersPassedToConstructor(): void {

@@ -7,6 +7,7 @@ namespace Rodas\Test\Diactoros\Response;
 use InvalidArgumentException;
 use Rodas\Diactoros\Response\RedirectResponse;
 use Rodas\Diactoros\Uri;
+use Rodas\Psr\Http\Message\StatusCode;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,8 @@ final class RedirectResponseTest extends TestCase
     public function testConstructorAcceptsStringUriAndProduces302ResponseWithLocationHeader(): void
     {
         $response = new RedirectResponse('/foo/bar');
-        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(302, $response->status);
+        $this->assertSame(StatusCode::FOUND, $response->statusCode);
         $this->assertTrue($response->hasHeader('Location'));
         $this->assertSame('/foo/bar', $response->getHeaderLine('Location'));
     }
@@ -24,7 +26,8 @@ final class RedirectResponseTest extends TestCase
     {
         $uri      = new Uri('https://example.com:10082/foo/bar');
         $response = new RedirectResponse($uri);
-        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(302, $response->status);
+        $this->assertSame(StatusCode::FOUND, $response->statusCode);
         $this->assertTrue($response->hasHeader('Location'));
         $this->assertSame((string) $uri, $response->getHeaderLine('Location'));
     }
@@ -32,7 +35,8 @@ final class RedirectResponseTest extends TestCase
     public function testConstructorAllowsSpecifyingAlternateStatusCode(): void
     {
         $response = new RedirectResponse('/foo/bar', 301);
-        $this->assertSame(301, $response->getStatusCode());
+        $this->assertSame(301, $response->status);
+        $this->assertSame(StatusCode::MOVED_PERMANENTLY, $response->statusCode);
         $this->assertTrue($response->hasHeader('Location'));
         $this->assertSame('/foo/bar', $response->getHeaderLine('Location'));
     }
@@ -40,7 +44,8 @@ final class RedirectResponseTest extends TestCase
     public function testConstructorAllowsSpecifyingHeaders(): void
     {
         $response = new RedirectResponse('/foo/bar', 302, ['X-Foo' => ['Bar']]);
-        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(302, $response->status);
+        $this->assertSame(StatusCode::FOUND, $response->statusCode);
         $this->assertTrue($response->hasHeader('Location'));
         $this->assertSame('/foo/bar', $response->getHeaderLine('Location'));
         $this->assertTrue($response->hasHeader('X-Foo'));
