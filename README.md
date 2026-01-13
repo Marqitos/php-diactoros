@@ -25,6 +25,12 @@ The main difference is that it relies on and implements the `rodas/http` interfa
 
 ---
 
+### Automatic IA Documentation
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Marqitos/php-diactoros)
+
+---
+
 ### References
 
 - [Laminas components](https://getlaminas.org/)

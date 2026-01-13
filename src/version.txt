@@ -1,2 +1,2 @@
-Commit: dcfcfd5
-Version: 0.1.0
+Commit: 36741dc
+Version: 1.0.0

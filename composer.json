@@ -66,9 +66,14 @@
             "@cs-check",
             "@test"
         ],
+        "dev:build:clean": "git clean -fX build/",
         "cs-check": "phpcs",
         "cs-fix": "phpcbf",
-        "test": "phpunit --colors=always",
+        "dev:test:unit": "phpunit --colors=always",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+    },
+    "scripts-descriptions": {
+        "dev:build:clean": "Cleans the build/ directory.",
+        "dev:test:unit": "Runs unit tests."
     }
 }
